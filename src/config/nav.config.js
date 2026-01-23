@@ -20,20 +20,16 @@ export const navConfig = {
       name: '开发工具',
       icon: '⚙️',
       items: [
-        { name: 'Wechat-MP', url: 'https://6d750607.pinit.eth.limo', desc: '公众号排版', icon: '🐙' },
         { name: 'IDEA 激活', url: 'https://hapgpt.com/archives/1752542998485', desc: 'IDEA 永久激活', icon: '📝' },
-        { name: 'Stack Overflow', url: 'https://stackoverflow.com', desc: '技术问答社区', icon: '💬' },
-        { name: 'MDN', url: 'https://developer.mozilla.org', desc: 'Web 技术文档', icon: '📚' },
       ],
     },
     {
       id: 'design',
-      name: '设计资源',
+      name: '公众号',
       icon: '🎨',
       items: [
-        { name: 'Figma', url: 'https://figma.com', desc: '协作式设计工具', icon: '🖌️' },
-        { name: 'Unsplash', url: 'https://unsplash.com', desc: '免费高质量图片', icon: '📷' },
-        { name: 'Coolors', url: 'https://coolors.co', desc: '配色方案生成', icon: '🌈' },
+        { name: 'Wechat-MP', url: 'https://6d750607.pinit.eth.limo', desc: '公众号图片排版', icon: '🐙' },
+        { name: 'Wechat文章', url: 'https://51dcc95f.pinit.eth.limo', desc: '公众号文字排版', icon: '💬' },
       ],
     },
     {
