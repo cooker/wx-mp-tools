@@ -21,6 +21,7 @@ export const navConfig = {
       icon: '⚙️',
       items: [
         { name: 'IDEA 激活', url: 'https://hapgpt.com/archives/1752542998485', desc: 'IDEA 永久激活', icon: '📝' },
+        { name: '视频下载', url: 'https://pan.quark.cn/s/9532d26de8eb', desc: '视频下载', icon: '🎬' },
       ],
     },
     {
@@ -28,8 +29,8 @@ export const navConfig = {
       name: '公众号',
       icon: '🎨',
       items: [
-        { name: 'Wechat-MP', url: 'https://6d750607.pinit.eth.limo', desc: '公众号图片排版', icon: '🐙' },
-        { name: 'Wechat文章', url: 'https://51dcc95f.pinit.eth.limo', desc: '公众号文字排版', icon: '💬' },
+        { name: 'Wechat-MP', url: 'https:/hapgpt.com/mp', desc: '公众号图片排版', icon: '🐙' },
+        { name: 'Wechat文章', url: 'https:/hapgpt.com/mp1', desc: '公众号文字排版', icon: '💬' },
       ],
     },
     {

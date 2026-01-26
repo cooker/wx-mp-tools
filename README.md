@@ -19,6 +19,45 @@ npm run build
 
 产物在 `dist/`，可部署到任意静态托管（Vercel、Netlify、GitHub Pages 等）。
 
+## 自动部署到 GitHub Pages
+
+项目已配置 GitHub Actions，每次推送到 `main` 或 `master` 分支会自动构建并部署到 GitHub Pages。
+
+### 首次设置
+
+1. **启用 GitHub Pages**：
+   - 进入仓库 Settings → Pages
+   - Source 选择 "GitHub Actions"
+
+2. **推送代码**：
+   ```bash
+   git add .
+   git commit -m "初始化项目"
+   git push origin main
+   ```
+
+3. **查看部署**：
+   - 在仓库的 Actions 标签页查看构建状态
+   - 部署完成后，访问 `https://cooker.github.io/仓库名/` 查看站点
+
+### 后续更新
+
+只需修改 `src/config/nav.config.js` 并提交，GitHub Actions 会自动：
+- 安装依赖
+- 构建项目
+- 部署到 GitHub Pages
+
+```bash
+# 修改配置后
+git add src/config/nav.config.js
+git commit -m "更新导航配置"
+git push
+```
+
+### 手动触发
+
+在 GitHub 仓库的 Actions 标签页，选择 "构建并部署到 GitHub Pages" 工作流，点击 "Run workflow" 可手动触发部署。
+
 ## 快速配置
 
 所有导航内容由 **`src/config/nav.config.js`** 控制，编辑该文件即可。
