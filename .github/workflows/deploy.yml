@@ -28,11 +28,14 @@ jobs:
         with:
           node-version: '20'
 
+      - name: 安装pnpm
+        run: wget -qO- https://get.pnpm.io/install.sh | ENV="$HOME/.shrc" SHELL="$(which sh)" sh -
+
       - name: 安装依赖
-        run: npm install --package-lock-only
+        run: pnpm install --package-lock-only
 
       - name: 构建项目
-        run: npm run build
+        run: pnpm run build
 
       - name: 设置 Pages
         uses: actions/configure-pages@v4
