@@ -29,7 +29,7 @@ jobs:
           node-version: '20'
 
       - name: 安装pnpm
-        run: wget -qO- https://get.pnpm.io/install.sh | ENV="$HOME/.shrc" SHELL="$(which sh)" sh -
+        run: npm install -g pnpm@latest-10
 
       - name: 安装依赖
         run: pnpm install --package-lock-only
