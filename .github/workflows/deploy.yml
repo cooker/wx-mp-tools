@@ -29,7 +29,7 @@ jobs:
           node-version: '20'
 
       - name: 安装依赖
-        run: npm install
+        run: npm install --package-lock-only
 
       - name: 构建项目
         run: npm run build
