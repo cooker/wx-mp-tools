@@ -98,6 +98,28 @@ categories: [
 
 增删分类、改链接，保存后刷新页面即可生效。
 
+### 底部广告位
+
+在 `nav.config.js` 中配置 `ad`，支持三种方式（按优先级使用 `html` > `image` > `link`）：
+
+```js
+ad: {
+  enabled: true,   // 是否展示广告位
+  // 方式一：自定义 HTML（如 AdSense、联盟脚本）
+  // html: '<div class="ad-unit">...</div>',
+  // 方式二：图片广告
+  image: {
+    src: 'https://...',   // 图片地址
+    url: 'https://...',   // 点击跳转
+    alt: '广告',
+  },
+  // 方式三：文案链接（当 image、html 都未配置时使用）
+  // link: { text: '赞助商链接', url: 'https://...' },
+}
+```
+
+- 不需要广告时，将 `enabled` 设为 `false` 或移除 `ad` 配置即可。
+
 ## 项目结构
 
 ```
@@ -105,8 +127,9 @@ categories: [
 │   ├── config/
 │   │   └── nav.config.js   ← 配置入口
 │   ├── components/
-│   │   ├── ToolCard.vue
-│   │   └── CategorySection.vue
+│   │   ├── AdSlot.vue
+│   │   ├── CategorySection.vue
+│   │   └── ToolCard.vue
 │   ├── App.vue
 │   ├── main.js
 │   └── style.css

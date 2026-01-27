@@ -1,8 +1,9 @@
 <script setup>
 import { navConfig } from './config/nav.config.js'
 import CategorySection from './components/CategorySection.vue'
+import AdSlot from './components/AdSlot.vue'
 
-const { site, categories } = navConfig
+const { site, categories, ad = {} } = navConfig
 </script>
 
 <template>
@@ -22,6 +23,8 @@ const { site, categories } = navConfig
       :index="index"
     />
   </main>
+
+  <AdSlot :config="ad" />
 
   <footer class="footer">
     <p>编辑 <code>src/config/nav.config.js</code> 快速配置导航</p>
