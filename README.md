@@ -120,6 +120,30 @@ ad: {
 
 - 不需要广告时，将 `enabled` 设为 `false` 或移除 `ad` 配置即可。
 
+### 右侧公告
+
+在 `nav.config.js` 中配置 `notices`，支持多条公告，每条可设置点击跳转：
+
+```js
+notices: {
+  enabled: true,        // 是否展示公告
+  title: '公告',        // 公告标题（可选）
+  items: [
+    {
+      title: '新功能上线',              // 公告标题
+      content: '新增多个实用工具',      // 公告内容（可选）
+      url: 'https://example.com',      // 点击跳转链接（可选，不填则不跳转）
+      date: '2024-01-15',              // 发布日期（可选）
+    },
+    // 更多公告...
+  ],
+}
+```
+
+- 公告显示在页面右侧，小屏幕时自动移到顶部
+- 支持 `sticky` 定位，滚动时保持可见
+- 不需要公告时，将 `enabled` 设为 `false` 或移除 `notices` 配置即可
+
 ## 项目结构
 
 ```
@@ -129,6 +153,7 @@ ad: {
 │   ├── components/
 │   │   ├── AdSlot.vue
 │   │   ├── CategorySection.vue
+│   │   ├── NoticeBoard.vue
 │   │   └── ToolCard.vue
 │   ├── App.vue
 │   ├── main.js

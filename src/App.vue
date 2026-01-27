@@ -2,8 +2,9 @@
 import { navConfig } from './config/nav.config.js'
 import CategorySection from './components/CategorySection.vue'
 import AdSlot from './components/AdSlot.vue'
+import NoticeBoard from './components/NoticeBoard.vue'
 
-const { site, categories, ad = {} } = navConfig
+const { site, categories, ad = {}, notices = {} } = navConfig
 </script>
 
 <template>
@@ -12,17 +13,23 @@ const { site, categories, ad = {} } = navConfig
     <p v-if="site.description" class="header__desc">{{ site.description }}</p>
   </header>
 
-  <main class="main">
-    <CategorySection
-      v-for="(cat, index) in categories"
-      :key="cat.id"
-      :id="cat.id"
-      :name="cat.name"
-      :icon="cat.icon"
-      :items="cat.items"
-      :index="index"
-    />
-  </main>
+  <div class="layout">
+    <main class="main">
+      <CategorySection
+        v-for="(cat, index) in categories"
+        :key="cat.id"
+        :id="cat.id"
+        :name="cat.name"
+        :icon="cat.icon"
+        :items="cat.items"
+        :index="index"
+      />
+    </main>
+
+    <aside class="sidebar">
+      <NoticeBoard :config="notices" />
+    </aside>
+  </div>
 
   <AdSlot :config="ad" />
 
@@ -54,8 +61,30 @@ const { site, categories, ad = {} } = navConfig
   max-width: 36ch;
 }
 
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 2rem;
+  align-items: start;
+}
+
 .main {
   animation: fadeIn 0.5s ease 0.1s both;
+  min-width: 0;
+}
+
+.sidebar {
+  animation: fadeIn 0.5s ease 0.15s both;
+}
+
+@media (max-width: 960px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    order: -1;
+  }
 }
 
 .footer {

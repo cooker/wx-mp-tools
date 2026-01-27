@@ -7,12 +7,27 @@
  * - categories: 分类列表，每个分类包含 name、icon(可选)、items
  * - items: 链接列表，每项包含 name、url、desc(可选)、icon(可选)
  * - ad: 底部广告位，可选 image / html / link 三种方式
+ * - notices: 右侧公告列表，支持点击跳转
  */
 
 export const navConfig = {
   site: {
     title: '工具导航',
     description: '常用开发与效率工具集合，一键直达',
+  },
+
+  /** 右侧公告：notices.enabled 为 true 时展示 */
+  notices: {
+    enabled: true,
+    title: '公告',
+    items: [
+      {
+        title: '微信搜索公众号: 聚好推助手',
+        content: '输入邀请码 MW4IYS 注册',
+        url: '',
+        date: '2024-01-10',
+      },
+    ],
   },
 
   /** 底部广告位：ad.enabled 为 true 时展示，按优先级使用 html > image > link */
@@ -58,7 +73,7 @@ export const navConfig = {
       items: [
         { name: 'TinyPNG', url: 'https://tinypng.com', desc: '图片压缩', icon: '🖼️' },
         { name: 'WifiCard', url: 'https://wificard.io/', desc: 'Wifi链接卡', icon: '🌐' },
-        { name: 'Zlib', url: 'https://getzlib.com/zh', desc: 'Zlib', icon: '🔧' },
+        { name: 'Zlib', url: 'https://getzlib.com/zh', desc: '电子书', icon: '🔧' },
         { name: '磁力搜索', url: 'https://knaben.org/search', desc: '磁力搜索', icon: '🔍' },
       ],
     },
