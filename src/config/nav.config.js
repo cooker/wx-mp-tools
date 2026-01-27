@@ -57,9 +57,9 @@ export const navConfig = {
       icon: '🔧',
       items: [
         { name: 'TinyPNG', url: 'https://tinypng.com', desc: '图片压缩', icon: '🖼️' },
-        { name: 'Can I Use', url: 'https://caniuse.com', desc: '前端兼容性查询', icon: '✅' },
-        { name: 'Regex101', url: 'https://regex101.com', desc: '正则测试与解释', icon: '📐' },
         { name: 'WifiCard', url: 'https://wificard.io/', desc: 'Wifi链接卡', icon: '🌐' },
+        { name: 'Zlib', url: 'https://getzlib.com/zh', desc: 'Zlib', icon: '🔧' },
+        { name: '磁力搜索', url: 'https://knaben.org/search', desc: '磁力搜索', icon: '🔍' },
       ],
     },
   ],
