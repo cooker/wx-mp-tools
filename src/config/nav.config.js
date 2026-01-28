@@ -54,6 +54,7 @@ export const navConfig = {
         { name: 'IDEA 激活', url: 'https://hapgpt.com/archives/1752542998485', desc: 'IDEA 永久激活', icon: '📝' },
         { name: '视频下载', url: 'https://pan.quark.cn/s/9532d26de8eb', desc: '视频下载', icon: '🎬' },
         { name: '炒股', url: 'https://chengzuopeng.github.io/stock-dashboard/eod-picker', desc: '炒股', icon: '🌊' },
+        { name: '🎅 ', url: 'http://x67.top/sdm1/#1769562997258', desc: '圣诞帽生成器', icon: '🎅 ' },
       ],
     },
     {
