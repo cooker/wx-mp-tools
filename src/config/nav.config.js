@@ -63,7 +63,7 @@ export const navConfig = {
       icon: '🎨',
       items: [
         { name: 'Wechat-MP', url: 'https://hapgpt.com/mp', desc: '公众号图片排版', icon: '🐙' },
-        { name: 'Wechat文章', url: 'https://hapgpt.com/mp1', desc: '公众号文字排版', icon: '💬' },
+        { name: 'Wechat文章', url: 'https://cooker.github.io/wx-mp-blank', desc: '公众号文字排版', icon: '💬' },
         { name: '废话生成器', url: 'http://cooker.github.io/wx-mp-dog', desc: '废话生成器', icon: '💬' },
       ],
     },
