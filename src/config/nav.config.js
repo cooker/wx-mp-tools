@@ -55,6 +55,7 @@ export const navConfig = {
         { name: '视频下载', url: 'https://pan.quark.cn/s/9532d26de8eb', desc: '视频下载', icon: '🎬' },
         { name: '炒股', url: 'https://chengzuopeng.github.io/stock-dashboard/eod-picker', desc: '炒股', icon: '🌊' },
         { name: '🎅 ', url: 'http://x67.top/sdm1/#1769562997258', desc: '圣诞帽生成器', icon: '🎅 ' },
+        { name: 'GitHub加速 🇺🇸', url: 'https://play.ruanyazyk.com/github.html', desc: 'GitHub加速', icon: '🇺🇸' },
       ],
     },
     {
@@ -77,6 +78,7 @@ export const navConfig = {
         { name: 'WifiCard', url: 'https://wificard.io/', desc: 'Wifi链接卡', icon: '🌐' },
         { name: 'Zlib', url: 'https://getzlib.com/zh', desc: '电子书', icon: '🔧' },
         { name: '磁力搜索', url: 'https://knaben.org/search', desc: '磁力搜索', icon: '🔍' },
+        { name: '相册服务', url: 'https://immich.app/', desc: '相册服务', icon: '📷' },
       ],
     },
   ],
