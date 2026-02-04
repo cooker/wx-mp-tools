@@ -79,6 +79,7 @@ export const navConfig = {
         { name: 'Zlib', url: 'https://getzlib.com/zh', desc: '电子书', icon: '🔧' },
         { name: '磁力搜索', url: 'https://knaben.org/search', desc: '磁力搜索', icon: '🔍' },
         { name: '相册服务', url: 'https://immich.app/', desc: '相册服务', icon: '📷' },
+        { name: '中文播客榜', url: 'https://xyzrank.com', desc: '中文播客榜', icon: '🎵' },
       ],
     },
   ],
