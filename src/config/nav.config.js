@@ -36,7 +36,7 @@ export const navConfig = {
   rewardCode: {
     enabled: true,
     title: '赞赏',
-    src: 'https://via.placeholder.com/200x200/161b22/8b949e?text=赞赏码',
+    src: 'https://fastly.jsdelivr.net/gh/gulugulu-lab/img19@main/2026/02/03/1770301243718-9e7e4c41-06ca-45aa-84c2-eb89f5cd7596.jpg',
     desc: '请作者喝杯咖啡',
   },
 
@@ -44,7 +44,7 @@ export const navConfig = {
   groupCode: {
     enabled: true,
     title: '交流群',
-    src: 'https://via.placeholder.com/200x200/161b22/8b949e?text=群码',
+    src: 'https://fastly.jsdelivr.net/gh/gulugulu-lab/img19@main/2026/02/03/1770301133890-a8591e06-6389-4f72-b0b8-4294253e334a.png',
     desc: '扫码加入交流群',
   },
 
