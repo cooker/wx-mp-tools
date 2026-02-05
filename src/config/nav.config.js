@@ -80,6 +80,7 @@ export const navConfig = {
         { name: '磁力搜索', url: 'https://knaben.org/search', desc: '磁力搜索', icon: '🔍' },
         { name: '相册服务', url: 'https://immich.app/', desc: '相册服务', icon: '📷' },
         { name: '中文播客榜', url: 'https://xyzrank.com', desc: '中文播客榜', icon: '🎵' },
+        { name: 'windows自动登录', url: 'https://learn.microsoft.com/en-us/sysinternals/downloads/autologon', desc: 'windows自动登录', icon: '💻' },
       ],
     },
   ],
