@@ -36,7 +36,7 @@ export const navConfig = {
   rewardCode: {
     enabled: true,
     title: '赞赏',
-    src: 'https://fastly.jsdelivr.net/gh/gulugulu-lab/img19@main/2026/02/03/1770301243718-9e7e4c41-06ca-45aa-84c2-eb89f5cd7596.jpg',
+    src: 'https://fastly.jsdelivr.net/gh/gulugulu-lab/img8@main/2026/02/03/1770301609551-176be6a0-5f07-426b-a20a-a7f8a219d430.jpg',
     desc: '请作者喝杯咖啡',
   },
 
