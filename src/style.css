@@ -1,24 +1,24 @@
-/* 设计系统: Bento Grid + Minimalism + Dark Mode */
+/* Minimalism + 深色主题 */
 
 :root {
-  --bg: #000000;
-  --bg-elevated: #121212;
-  --bg-card: #121212;
-  --bg-secondary: #0A0E27;
-  --border: #1E293B;
-  --text: #E6EDF3;
-  --text-alt: #F1F5F9;
-  --text-muted: #8B949E;
-  --accent: #0080FF;
-  --accent-hover: #3399FF;
-  --font-display: 'Outfit', 'Inter', system-ui, sans-serif;
+  --bg: #0d1117;
+  --bg-elevated: #161b22;
+  --bg-card: #161b22;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text-muted: #8b949e;
+  --accent: #58a6ff;
+  --accent-hover: #79b8ff;
+  --font-display: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-  --radius: 12px;
-  --radius-lg: 16px;
-  --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  --shadow-hover: 0 8px 28px rgba(0, 0, 0, 0.5);
+  --radius: 6px;
+  --radius-lg: 8px;
   --transition: 200ms ease;
-  --transition-slow: 400ms ease-out;
+  --transition-slow: 250ms ease;
+  /* 极简：仅边框，无阴影 */
+  --shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --hover-overlay: rgba(255, 255, 255, 0.05);
 }
 
 * {
@@ -47,19 +47,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* 极简背景 - 微弱网格纹理 */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
-  background-size: 48px 48px;
-  pointer-events: none;
-  z-index: 0;
-}
-
 #app {
   position: relative;
   z-index: 1;
@@ -73,9 +60,16 @@ a {
   text-decoration: none;
 }
 
-/* 焦点轮廓 - 无障碍 */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
 a:focus-visible,
-button:focus-visible {
+button:focus-visible,
+input:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }

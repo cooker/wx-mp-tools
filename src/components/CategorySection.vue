@@ -8,8 +8,10 @@ const props = defineProps({
   icon: { type: String, default: '' },
   items: { type: Array, required: true },
   index: { type: Number, default: 0 },
-  size: { type: String, default: 'md' }, // sm, md, lg for bento span
+  size: { type: String, default: 'md' },
+  isFavorited: { type: Function, default: () => false },
 })
+const emit = defineEmits(['toggle-favorite'])
 
 const sectionId = props.id || `cat-${props.index}`
 
@@ -33,11 +35,13 @@ const gridClass = computed(() => {
     <div class="category__grid">
       <ToolCard
         v-for="(item, i) in items"
-        :key="i"
+        :key="item.url || i"
         :name="item.name"
         :url="item.url"
         :desc="item.desc"
         :icon="item.icon"
+        :favorited="isFavorited(item.url)"
+        @toggle-favorite="emit('toggle-favorite', item.url)"
       />
     </div>
   </section>

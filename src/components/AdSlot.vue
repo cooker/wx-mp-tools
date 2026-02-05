@@ -51,7 +51,7 @@ const useLink = computed(
 .ad-slot {
   margin-top: 2rem;
   padding: 1rem 0;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .ad-slot__html {
@@ -73,12 +73,11 @@ const useLink = computed(
   border-radius: var(--radius);
   overflow: hidden;
   border: 1px solid var(--border);
-  transition: border-color var(--transition), box-shadow var(--transition);
+  transition: border-color var(--transition);
 }
 
 .ad-slot__image:hover {
   border-color: var(--accent);
-  box-shadow: var(--shadow-hover);
 }
 
 .ad-slot__image img {
@@ -99,7 +98,7 @@ const useLink = computed(
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  transition: color var(--transition), border-color var(--transition);
+  transition: border-color var(--transition), color var(--transition);
 }
 
 .ad-slot__link:hover {

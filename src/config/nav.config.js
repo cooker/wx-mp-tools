@@ -8,6 +8,8 @@
  * - items: 链接列表，每项包含 name、url、desc(可选)、icon(可选)
  * - ad: 底部广告位，可选 image / html / link 三种方式
  * - notices: 右侧公告列表，支持点击跳转
+ * - rewardCode: 赞赏码（微信/支付宝收款码图片）
+ * - groupCode: 群码（加入群聊的二维码图片）
  */
 
 export const navConfig = {
@@ -28,6 +30,22 @@ export const navConfig = {
         date: '2024-01-10',
       },
     ],
+  },
+
+  /** 赞赏码：公告下方展示，enabled 为 true 且 src 有值时显示 */
+  rewardCode: {
+    enabled: true,
+    title: '赞赏',
+    src: 'https://via.placeholder.com/200x200/161b22/8b949e?text=赞赏码',
+    desc: '请作者喝杯咖啡',
+  },
+
+  /** 群码：公告下方展示，enabled 为 true 且 src 有值时显示 */
+  groupCode: {
+    enabled: true,
+    title: '交流群',
+    src: 'https://via.placeholder.com/200x200/161b22/8b949e?text=群码',
+    desc: '扫码加入交流群',
   },
 
   /** 底部广告位：ad.enabled 为 true 时展示，按优先级使用 html > image > link */

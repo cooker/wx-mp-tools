@@ -91,7 +91,7 @@ const formatDate = (dateStr) => {
 }
 
 .notice-board__item {
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-subtle);
   padding-bottom: 0.75rem;
 }
 
@@ -102,14 +102,14 @@ const formatDate = (dateStr) => {
 
 .notice-board__link {
   display: block;
-  transition: background-color var(--transition), color var(--transition);
+  transition: color var(--transition), background var(--transition);
   border-radius: 8px;
   padding: 0.5rem;
   margin: -0.5rem;
 }
 
 .notice-board__link:hover {
-  background: var(--bg-elevated);
+  background: var(--hover-overlay);
 }
 
 .notice-board__link[href]:hover .notice-board__notice-title {
@@ -166,6 +166,6 @@ const formatDate = (dateStr) => {
 }
 
 .notice-board::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: rgba(255,255,255,0.15);
 }
 </style>

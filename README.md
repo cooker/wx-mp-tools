@@ -58,6 +58,12 @@ git push
 
 在 GitHub 仓库的 Actions 标签页，选择 "构建并部署到 GitHub Pages" 工作流，点击 "Run workflow" 可手动触发部署。
 
+## 功能
+
+- **搜索**：输入关键词实时过滤工具名称和描述（300ms debounce）
+- **分类筛选**：按分类筛选，支持「全部」
+- **收藏**：点击工具卡片右上角星形收藏，数据保存在 `localStorage`
+
 ## 快速配置
 
 所有导航内容由 **`src/config/nav.config.js`** 控制，编辑该文件即可。
@@ -145,6 +151,29 @@ notices: {
 - 支持 `sticky` 定位，滚动时保持可见
 - 不需要公告时，将 `enabled` 设为 `false` 或移除 `notices` 配置即可
 
+### 赞赏码与群码
+
+在公告下方展示赞赏码、群码二维码，配置 `rewardCode`、`groupCode`：
+
+```js
+rewardCode: {
+  enabled: true,
+  title: '赞赏',
+  src: 'https://你的图床/赞赏码.png',
+  desc: '请作者喝杯咖啡',
+},
+
+groupCode: {
+  enabled: true,
+  title: '交流群',
+  src: 'https://你的图床/群码.png',
+  desc: '扫码加入交流群',
+},
+```
+
+- `enabled` 为 `true` 且 `src` 有值时展示
+- 不需要时，将 `enabled` 设为 `false` 即可
+
 ## 项目结构
 
 ```
@@ -155,6 +184,8 @@ notices: {
 │   │   ├── AdSlot.vue
 │   │   ├── CategorySection.vue
 │   │   ├── NoticeBoard.vue
+│   │   ├── QrCodeCard.vue
+│   │   ├── SidebarQrCodes.vue
 │   │   └── ToolCard.vue
 │   ├── App.vue
 │   ├── main.js
