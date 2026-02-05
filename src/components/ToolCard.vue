@@ -28,19 +28,20 @@ defineProps({
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.875rem 1rem;
+  padding: 1rem;
+  min-height: 44px;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  transition: var(--transition);
+  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
   text-align: left;
+  cursor: pointer;
 }
 
 .tool-card:hover {
   border-color: var(--accent);
-  background: var(--bg-elevated);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-hover);
+  transform: scale(1.02);
 }
 
 .tool-card__icon {
@@ -64,9 +65,9 @@ defineProps({
 }
 
 .tool-card__desc {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--text-muted);
-  font-family: var(--font-mono);
+  line-height: 1.4;
 }
 
 .tool-card__arrow {
@@ -74,12 +75,18 @@ defineProps({
   color: var(--accent);
   opacity: 0;
   transform: translateX(-4px);
-  transition: var(--transition);
+  transition: opacity var(--transition), transform var(--transition);
   flex-shrink: 0;
 }
 
 .tool-card:hover .tool-card__arrow {
   opacity: 1;
   transform: translateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tool-card:hover {
+    transform: none;
+  }
 }
 </style>

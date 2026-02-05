@@ -79,6 +79,7 @@ categories: [
     id: 'dev',             // 唯一 id，用于无障碍等
     name: '开发工具',       // 分类名称
     icon: '⚙️',            // 可选，emoji
+    size: 'md',            // 可选，bento 宽度：sm | md | lg
     items: [
       {
         name: 'GitHub',

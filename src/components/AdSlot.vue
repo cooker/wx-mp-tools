@@ -65,6 +65,7 @@ const useLink = computed(
   max-width: 100%;
   height: auto;
   display: block;
+  border-radius: var(--radius);
 }
 
 .ad-slot__image {
@@ -72,12 +73,12 @@ const useLink = computed(
   border-radius: var(--radius);
   overflow: hidden;
   border: 1px solid var(--border);
-  transition: var(--transition);
+  transition: border-color var(--transition), box-shadow var(--transition);
 }
 
 .ad-slot__image:hover {
   border-color: var(--accent);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-hover);
 }
 
 .ad-slot__image img {
@@ -92,12 +93,13 @@ const useLink = computed(
   display: inline-flex;
   align-items: center;
   padding: 0.5rem 1rem;
+  min-height: 44px;
   font-size: 0.9rem;
   color: var(--text-muted);
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  transition: var(--transition);
+  transition: color var(--transition), border-color var(--transition);
 }
 
 .ad-slot__link:hover {

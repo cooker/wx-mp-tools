@@ -17,7 +17,10 @@ const formatDate = (dateStr) => {
 <template>
   <aside v-if="show" class="notice-board" aria-label="公告">
     <h2 class="notice-board__title">
-      <span class="notice-board__icon" aria-hidden="true">📢</span>
+      <svg class="notice-board__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m3 11 18-5v12L3 14v-3z" />
+        <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
+      </svg>
       {{ config.title || '公告' }}
     </h2>
     <ul class="notice-board__list">
@@ -53,7 +56,7 @@ const formatDate = (dateStr) => {
 .notice-board {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   padding: 1.25rem;
   position: sticky;
   top: 2rem;
@@ -69,13 +72,15 @@ const formatDate = (dateStr) => {
   font-weight: 600;
   color: var(--text);
   margin-bottom: 1rem;
-  font-family: var(--font-mono);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
 }
 
 .notice-board__icon {
-  font-size: 1.1rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+  color: var(--text-muted);
 }
 
 .notice-board__list {
@@ -97,14 +102,18 @@ const formatDate = (dateStr) => {
 
 .notice-board__link {
   display: block;
-  transition: var(--transition);
-  border-radius: 6px;
+  transition: background-color var(--transition), color var(--transition);
+  border-radius: 8px;
   padding: 0.5rem;
   margin: -0.5rem;
 }
 
 .notice-board__link:hover {
   background: var(--bg-elevated);
+}
+
+.notice-board__link[href]:hover .notice-board__notice-title {
+  color: var(--accent);
 }
 
 .notice-board__link--no-link {
@@ -125,6 +134,7 @@ const formatDate = (dateStr) => {
   color: var(--text);
   line-height: 1.4;
   flex: 1;
+  transition: color var(--transition);
 }
 
 .notice-board__date {
@@ -142,7 +152,6 @@ const formatDate = (dateStr) => {
   margin: 0;
 }
 
-/* 滚动条样式 */
 .notice-board::-webkit-scrollbar {
   width: 6px;
 }

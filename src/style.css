@@ -1,18 +1,24 @@
-/* CSS 变量 - 工业风深色主题 */
+/* 设计系统: Bento Grid + Minimalism + Dark Mode */
+
 :root {
-  --bg: #0d1117;
-  --bg-elevated: #161b22;
-  --bg-card: #21262d;
-  --border: #30363d;
-  --text: #e6edf3;
-  --text-muted: #8b949e;
-  --accent: #f59e0b;
-  --accent-hover: #fbbf24;
-  --font-display: 'Outfit', system-ui, sans-serif;
+  --bg: #000000;
+  --bg-elevated: #121212;
+  --bg-card: #121212;
+  --bg-secondary: #0A0E27;
+  --border: #1E293B;
+  --text: #E6EDF3;
+  --text-alt: #F1F5F9;
+  --text-muted: #8B949E;
+  --accent: #0080FF;
+  --accent-hover: #3399FF;
+  --font-display: 'Outfit', 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-  --radius: 10px;
-  --shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
-  --transition: 0.2s ease;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  --shadow-hover: 0 8px 28px rgba(0, 0, 0, 0.5);
+  --transition: 200ms ease;
+  --transition-slow: 400ms ease-out;
 }
 
 * {
@@ -26,6 +32,12 @@ html {
   scroll-behavior: smooth;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 body {
   font-family: var(--font-display);
   background: var(--bg);
@@ -35,14 +47,14 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* 背景网格纹理 */
+/* 极简背景 - 微弱网格纹理 */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
   background-size: 48px 48px;
   pointer-events: none;
   z-index: 0;
@@ -59,4 +71,11 @@ body::before {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* 焦点轮廓 - 无障碍 */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }

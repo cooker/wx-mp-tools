@@ -50,6 +50,7 @@ export const navConfig = {
       id: 'dev',
       name: '开发工具',
       icon: '⚙️',
+      size: 'md', // sm | md | lg (bento span)
       items: [
         { name: 'IDEA 激活', url: 'https://hapgpt.com/archives/1752542998485', desc: 'IDEA 永久激活', icon: '📝' },
         { name: '视频下载', url: 'https://pan.quark.cn/s/9532d26de8eb', desc: '视频下载', icon: '🎬' },
@@ -62,6 +63,7 @@ export const navConfig = {
       id: 'design',
       name: '公众号',
       icon: '🎨',
+      size: 'md',
       items: [
         { name: 'Wechat-MP', url: 'https://cooker.github.io/wx-mp-article', desc: '公众号图片排版', icon: '🐙' },
         { name: 'Wechat文章', url: 'https://cooker.github.io/wx-mp-blank', desc: '公众号文字排版', icon: '💬' },
@@ -73,6 +75,7 @@ export const navConfig = {
       id: 'utils',
       name: '实用工具',
       icon: '🔧',
+      size: 'lg',
       items: [
         { name: 'TinyPNG', url: 'https://tinypng.com', desc: '图片压缩', icon: '🖼️' },
         { name: 'WifiCard', url: 'https://wificard.io/', desc: 'Wifi链接卡', icon: '🌐' },
