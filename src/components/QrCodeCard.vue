@@ -26,6 +26,11 @@ defineProps({
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.qr-card:hover {
+  transform: scale(1.08);
 }
 
 .qr-card__title {
