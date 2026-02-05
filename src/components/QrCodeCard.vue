@@ -23,11 +23,17 @@ defineProps({
 
 <style scoped>
 .qr-card {
+  position: relative;
+  z-index: 0;
   padding: 1rem;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   text-align: center;
+}
+
+.qr-card:hover {
+  z-index: 100;
 }
 
 .qr-card__title {
@@ -38,18 +44,18 @@ defineProps({
 }
 
 .qr-card__img-wrap {
-  overflow: hidden;
+  position: relative;
+  overflow: visible;
   border-radius: var(--radius);
   margin: 0 auto;
-  max-width: 180px;
-  aspect-ratio: 1;
+  display: inline-block;
 }
 
 .qr-card__img {
   display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+  width: auto;
+  height: auto;
+  max-width: 100%;
   border-radius: var(--radius);
   transition: transform 0.2s ease;
 }
