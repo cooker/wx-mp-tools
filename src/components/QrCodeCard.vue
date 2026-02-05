@@ -9,12 +9,14 @@ defineProps({
 <template>
   <div class="qr-card">
     <h3 class="qr-card__title">{{ title }}</h3>
-    <img
-      :src="src"
-      :alt="title"
-      class="qr-card__img"
-      loading="lazy"
-    />
+    <div class="qr-card__img-wrap">
+      <img
+        :src="src"
+        :alt="title"
+        class="qr-card__img"
+        loading="lazy"
+      />
+    </div>
     <p v-if="desc" class="qr-card__desc">{{ desc }}</p>
   </div>
 </template>
@@ -26,11 +28,6 @@ defineProps({
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   text-align: center;
-  transition: transform 0.2s ease;
-}
-
-.qr-card:hover {
-  transform: scale(1.08);
 }
 
 .qr-card__title {
@@ -40,15 +37,25 @@ defineProps({
   margin-bottom: 0.75rem;
 }
 
+.qr-card__img-wrap {
+  overflow: hidden;
+  border-radius: var(--radius);
+  margin: 0 auto;
+  max-width: 180px;
+  aspect-ratio: 1;
+}
+
 .qr-card__img {
   display: block;
   width: 100%;
-  max-width: 180px;
-  height: auto;
-  aspect-ratio: 1;
+  height: 100%;
   object-fit: contain;
-  margin: 0 auto;
   border-radius: var(--radius);
+  transition: transform 0.2s ease;
+}
+
+.qr-card:hover .qr-card__img {
+  transform: scale(1.15);
 }
 
 .qr-card__desc {
