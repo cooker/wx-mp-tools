@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { usePrompts } from '../composables/usePrompts.js'
+import { usePrompts } from '../../../composables/usePrompts.js'
 import PromptCard from './PromptCard.vue'
 
 const props = defineProps({

@@ -227,38 +227,32 @@ tags: 代码, 测试
 
 ```
 ├── src/
-│   ├── config/
-│   │   ├── nav.config.js    ← 工具导航配置
-│   │   └── prompt.config.js ← 提示词配置
-│   ├── views/
-│   │   ├── HomeView.vue     ← 首页（工具导航）
-│   │   └── PromptsView.vue  ← 提示词页
-│   ├── components/
-│   │   ├── AdSlot.vue
-│   │   ├── CategorySection.vue
-│   │   ├── FilterTabs.vue
-│   │   ├── NoticeBoard.vue
-│   │   ├── PromptCard.vue
-│   │   ├── PromptSection.vue
-│   │   ├── QrCodeCard.vue
-│   │   ├── SearchBar.vue
-│   │   ├── SidebarQrCodes.vue
-│   │   └── ToolCard.vue
-│   ├── composables/
-│   │   ├── useFavorites.js
-│   │   └── usePrompts.js
-│   ├── router/
-│   │   └── index.js         ← 路由（/ 首页、/prompts 提示词）
+│   ├── config/              ← 配置（保留）
+│   │   ├── nav.config.js
+│   │   └── prompt.config.js
+│   ├── modules/             ← 按功能模块
+│   │   ├── nav/             ← 工具导航
+│   │   │   ├── HomeView.vue
+│   │   │   └── components/   CategorySection, FilterTabs, SearchBar, ToolCard
+│   │   ├── prompts/         ← 提示词
+│   │   │   ├── PromptsView.vue
+│   │   │   └── components/   PromptSection, PromptCard
+│   │   └── shared/          ← 公告/广告/二维码
+│   │       └── AdSlot, NoticeBoard, SidebarQrCodes, QrCodeCard
+│   ├── composables/         useFavorites, usePrompts
+│   ├── router/              index.js（单文件）
+│   ├── styles/              ← 集中样式
+│   │   ├── variables.css
+│   │   └── global.css
+│   ├── utils/                ← 纯函数
+│   │   ├── parseFrontmatter.js
+│   │   └── formatDate.js
 │   ├── App.vue
 │   ├── main.js
-│   └── style.css
-├── public/
-│   ├── prompt/              ← 提示词 .md 文件
-│   │   └── *.md
-│   └── favicon.svg
-├── index.html
-├── package.json
-└── vite.config.js
+│   └── style.css            ← 入口，@import styles/*
+├── public/prompt/
+├── scripts/                  generate-prompt-manifest.js
+└── ...
 ```
 
 ## 技术栈

@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import PromptSection from '../components/PromptSection.vue'
+import PromptSection from './components/PromptSection.vue'
 
 const router = useRouter()
 </script>

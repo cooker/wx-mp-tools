@@ -1,17 +1,12 @@
 <script setup>
 import { computed } from 'vue'
+import { formatDate } from '../../utils/formatDate.js'
 
 const props = defineProps({
   config: { type: Object, default: () => ({}) },
 })
 
 const show = computed(() => Boolean(props.config?.enabled && props.config?.items?.length))
-
-const formatDate = (dateStr) => {
-  if (!dateStr) return ''
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
-}
 </script>
 
 <template>

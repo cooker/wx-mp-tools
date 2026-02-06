@@ -1,13 +1,13 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { navConfig } from '../config/nav.config.js'
-import CategorySection from '../components/CategorySection.vue'
-import AdSlot from '../components/AdSlot.vue'
-import NoticeBoard from '../components/NoticeBoard.vue'
-import SidebarQrCodes from '../components/SidebarQrCodes.vue'
-import SearchBar from '../components/SearchBar.vue'
-import FilterTabs from '../components/FilterTabs.vue'
-import { useFavorites } from '../composables/useFavorites.js'
+import { navConfig } from '../../config/nav.config.js'
+import CategorySection from './components/CategorySection.vue'
+import SearchBar from './components/SearchBar.vue'
+import FilterTabs from './components/FilterTabs.vue'
+import AdSlot from '../shared/AdSlot.vue'
+import NoticeBoard from '../shared/NoticeBoard.vue'
+import SidebarQrCodes from '../shared/SidebarQrCodes.vue'
+import { useFavorites } from '../../composables/useFavorites.js'
 
 const { has: isFavorited, toggle: toggleFavorite } = useFavorites()
 
