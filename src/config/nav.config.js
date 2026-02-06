@@ -48,7 +48,11 @@ export const navConfig = {
     desc: '扫码加入交流群',
   },
 
-  /** 底部广告位：ad.enabled 为 true 时展示，支持多广告轮播 */
+  /**
+   * 底部广告位：ad.enabled 为 true 时展示，支持多广告轮播
+   * 图片展示：宽 100%、高 120px，平铺拉伸填充（object-fit: fill）
+   * 推荐尺寸：1200×120（约 10:1）或 1200×80（15:1），横版长图适配更好
+   */
   ad: {
     enabled: true,
     /** 轮播间隔（ms），默认 5000 */
