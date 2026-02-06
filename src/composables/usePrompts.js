@@ -115,13 +115,38 @@ export function usePrompts() {
 
   async function load() {
     const { enabled, items = [], autoLoadFromPublic } = promptConfig
-    if (!enabled || !items.length) {
+    if (!enabled) {
       loading.value = false
       return
     }
     loading.value = true
-    const base = typeof import.meta?.env?.BASE_URL === 'string' ? import.meta.env.BASE_URL : '/'
-    const loaded = await Promise.all(items.map((item) => loadPromptItem(item, base)))
+    const base = typeof import.meta?.env?.BASE_URL === 'string' ? import.meta.env.BASE_URL : './'
+    const basePath = base.endsWith('/') ? base : base + '/'
+    const promptBase = basePath + 'prompt/'
+
+    let loaded = []
+
+    if (items.length > 0) {
+      loaded = await Promise.all(items.map((item) => loadPromptItem(item, base)))
+    }
+
+    if (autoLoadFromPublic) {
+      try {
+        const manifestRes = await fetch(`${promptBase}manifest.json`)
+        if (manifestRes.ok) {
+          const fileIds = await manifestRes.json()
+          const existingIds = new Set(loaded.map((p) => p.id))
+          const toLoad = fileIds.filter((id) => !existingIds.has(id))
+          const fromPublic = await Promise.all(
+            toLoad.map((id) => loadPromptItem({ id, title: id, tags: [], content: '' }, base))
+          )
+          loaded = [...loaded, ...fromPublic]
+        }
+      } catch {
+        // manifest 不存在或网络错误，忽略
+      }
+    }
+
     prompts.value = loaded.filter((p) => p.content)
     loading.value = false
   }

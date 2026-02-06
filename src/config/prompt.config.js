@@ -24,25 +24,25 @@ export const promptConfig = {
   autoLoadFromPublic: true,
 
   items: [
-    {
-      id: 'code-review',
-      title: '代码审查',
-      tags: ['代码'],
-      content: '请作为资深开发者，审查以下代码，指出潜在 bug、性能问题、可读性改进建议，并给出更优实现（如有）。',
-      // url: 'https://example.com/prompts/code-review.md',  // 可选：从远程拉取
-      // file: 'code-review',  // 可选：从 /prompt/code-review.md 加载，省略时用 id
-    },
-    {
-      id: 'code-explain',
-      title: '代码解释',
-      tags: ['代码'],
-      content: '请逐行解释以下代码的逻辑与作用，对关键概念用简短示例说明。',
-    },
-    {
-      id: 'unit-test',
-      title: '生成单测',
-      tags: ['测试', '代码'],
-      content: '请为以下函数/模块编写单元测试，覆盖正常与边界情况，使用项目已有的测试框架与风格。',
-    },
+    // {
+    //   id: 'code-review',
+    //   title: '代码审查',
+    //   tags: ['代码'],
+    //   content: '请作为资深开发者，审查以下代码，指出潜在 bug、性能问题、可读性改进建议，并给出更优实现（如有）。',
+    //   // url: 'https://example.com/prompts/code-review.md',  // 可选：从远程拉取
+    //   // file: 'code-review',  // 可选：从 /prompt/code-review.md 加载，省略时用 id
+    // },
+    // {
+    //   id: 'code-explain',
+    //   title: '代码解释',
+    //   tags: ['代码'],
+    //   content: '请逐行解释以下代码的逻辑与作用，对关键概念用简短示例说明。',
+    // },
+    // {
+    //   id: 'unit-test',
+    //   title: '生成单测',
+    //   tags: ['测试', '代码'],
+    //   content: '请为以下函数/模块编写单元测试，覆盖正常与边界情况，使用项目已有的测试框架与风格。',
+    // },
   ],
 }

@@ -4,6 +4,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/generate-prompt-manifest.js",
+    "prebuild": "node scripts/generate-prompt-manifest.js",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"

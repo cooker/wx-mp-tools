@@ -207,6 +207,8 @@ export const promptConfig = {
 
 **数据优先级**：`url` > `file`（本地 .md）> `content`
 
+**`autoLoadFromPublic: true`**：自动加载 `public/prompt/` 下所有 `.md` 文件（除 README.md），无需在 `items` 中逐条配置。构建时会生成 `manifest.json` 供运行时读取。`items` 中的配置仍会加载，与自动发现的结果合并（自动发现不会覆盖已有 id）。
+
 **本地 .md 文件**（`public/prompt/` 目录）：
 
 ```md
