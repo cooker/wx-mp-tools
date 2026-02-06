@@ -65,7 +65,7 @@ export const navConfig = {
       {
         image: {
           src: 'https://cdn.jsdelivr.net/gh/gulugulu-lab/img0@main/2026/02/06/qUXEih.jpg',
-          url: 'https://www.aliyun.com/minisite/goods?userCode=md7pdz8m',
+          url: 'https://www.adobe.com/cn/',
           alt: 'Adobe 全家桶',
         },
       }
