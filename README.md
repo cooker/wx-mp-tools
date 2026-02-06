@@ -66,6 +66,7 @@ git push
 - **开发提示词**：独立页面，支持搜索、按标签筛选、一键复制，可从顶部导航或工具卡片进入
 - **站内链接**：工具链接可配置 `internal: true` 实现站内跳转（不新开标签）
 - **二维码预览**：点击赞赏码/群码图片可全屏预览，支持 ESC、点击遮罩、关闭按钮退出
+- **广告轮播**：底部广告位支持多个广告配置，自动轮播
 
 ## 快速配置
 
@@ -111,25 +112,23 @@ categories: [
 
 ### 底部广告位
 
-在 `nav.config.js` 中配置 `ad`，支持三种方式（按优先级使用 `html` > `image` > `link`）：
+支持**多个广告轮播**，在 `nav.config.js` 中配置 `ad.items`，每项可选 `html` / `image` / `link`（按优先级）：
 
 ```js
 ad: {
-  enabled: true,   // 是否展示广告位
-  // 方式一：自定义 HTML（如 AdSense、联盟脚本）
-  // html: '<div class="ad-unit">...</div>',
-  // 方式二：图片广告
-  image: {
-    src: 'https://...',   // 图片地址
-    url: 'https://...',   // 点击跳转
-    alt: '广告',
-  },
-  // 方式三：文案链接（当 image、html 都未配置时使用）
-  // link: { text: '赞助商链接', url: 'https://...' },
+  enabled: true,
+  interval: 5000,   // 轮播间隔（ms），默认 5000
+  items: [
+    { image: { src: 'https://...', url: 'https://...', alt: '广告' } },
+    { link: { text: '赞助商链接', url: 'https://...' } },
+    { html: '<div class="ad-unit">...</div>' },
+  ],
 }
 ```
 
-- 不需要广告时，将 `enabled` 设为 `false` 或移除 `ad` 配置即可。
+- 兼容旧格式：未配置 `items` 时，顶层 `image` / `html` / `link` 仍可用（单广告）
+- 多个广告时自动轮播，底部显示圆点可点击切换
+- 不需要广告时，将 `enabled` 设为 `false`
 
 ### 右侧公告
 

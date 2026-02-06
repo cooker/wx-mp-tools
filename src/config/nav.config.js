@@ -6,7 +6,7 @@
  * - site: 站点标题、描述等
  * - categories: 分类列表，每个分类包含 name、icon(可选)、items
  * - items: 链接列表，每项包含 name、url、desc(可选)、icon(可选)、internal(可选，站内链接)
- * - ad: 底部广告位，可选 image / html / link 三种方式
+ * - ad: 底部广告位，支持多个广告轮播，每项可选 image / html / link
  * - notices: 右侧公告列表，支持点击跳转
  * - rewardCode: 赞赏码（微信/支付宝收款码图片）
  * - groupCode: 群码（加入群聊的二维码图片）
@@ -48,19 +48,29 @@ export const navConfig = {
     desc: '扫码加入交流群',
   },
 
-  /** 底部广告位：ad.enabled 为 true 时展示，按优先级使用 html > image > link */
+  /** 底部广告位：ad.enabled 为 true 时展示，支持多广告轮播 */
   ad: {
     enabled: true,
-    // 方式一：自定义 HTML（如 AdSense、联盟脚本等）
-    // html: '<div class="ad-unit">...</div>',
-    // 方式二：图片广告
-    image: {
-      src: 'https://fastly.jsdelivr.net/gh/bucketio/img14@main/2026/01/27/1769477339654-79fbee3a-ebf3-436a-8981-1c94099ca3fb.jpg',
-      url: 'https://www.aliyun.com/minisite/goods?userCode=md7pdz8m',
-      alt: '阿里云推广',
-    },
-    // 方式三：文案链接（当 image、html 都未配置时使用）
-    // link: { text: '赞助商链接', url: 'https://example.com' },
+    /** 轮播间隔（ms），默认 5000 */
+    interval: 5000,
+    /** 广告列表，每项按优先级使用 html > image > link */
+    items: [
+      {
+        image: {
+          src: 'https://fastly.jsdelivr.net/gh/bucketio/img14@main/2026/01/27/1769477339654-79fbee3a-ebf3-436a-8981-1c94099ca3fb.jpg',
+          url: 'https://www.aliyun.com/minisite/goods?userCode=md7pdz8m',
+          alt: '阿里云推广',
+        },
+      },
+      {
+        image: {
+          src: 'https://cdn.jsdelivr.net/gh/gulugulu-lab/img0@main/2026/02/06/qUXEih.jpg',
+          url: 'https://www.aliyun.com/minisite/goods?userCode=md7pdz8m',
+          alt: 'Adobe 全家桶',
+        },
+      }
+      // { link: { text: '赞助商链接', url: 'https://example.com' } },
+    ],
   },
 
   categories: [
