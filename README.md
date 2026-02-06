@@ -42,7 +42,7 @@ npm run build
 
 ### 后续更新
 
-只需修改 `src/config/nav.config.js` 并提交，GitHub Actions 会自动：
+只需修改 `src/config/nav.config.js` 或 `src/config/prompt.config.js` 并提交，GitHub Actions 会自动：
 - 安装依赖
 - 构建项目
 - 部署到 GitHub Pages
@@ -63,10 +63,14 @@ git push
 - **搜索**：输入关键词实时过滤工具名称和描述（300ms debounce）
 - **分类筛选**：按分类筛选，支持「全部」
 - **收藏**：点击工具卡片右上角星形收藏，数据保存在 `localStorage`
+- **开发提示词**：独立页面，支持搜索、按标签筛选、一键复制，可从顶部导航或工具卡片进入
+- **站内链接**：工具链接可配置 `internal: true` 实现站内跳转（不新开标签）
+- **二维码预览**：点击赞赏码/群码图片可全屏预览，支持 ESC、点击遮罩、关闭按钮退出
 
 ## 快速配置
 
-所有导航内容由 **`src/config/nav.config.js`** 控制，编辑该文件即可。
+- **工具导航**：`src/config/nav.config.js`
+- **开发提示词**：`src/config/prompt.config.js`、`public/prompt/*.md`
 
 ### 站点信息
 
@@ -101,7 +105,7 @@ categories: [
 ```
 
 - **分类**：`id`、`name` 必填；`icon` 可选。
-- **链接**：`name`、`url` 必填；`desc`、`icon` 可选。
+- **链接**：`name`、`url` 必填；`desc`、`icon` 可选；`internal` 可选（设为 `true` 为站内链接，不新开标签）。
 
 增删分类、改链接，保存后刷新页面即可生效。
 
@@ -174,22 +178,82 @@ groupCode: {
 - `enabled` 为 `true` 且 `src` 有值时展示
 - 不需要时，将 `enabled` 设为 `false` 即可
 
+### 开发提示词
+
+提示词为**独立页面**，编辑 `src/config/prompt.config.js` 或 `public/prompt/*.md` 维护。
+
+**入口**：顶部导航「提示词」、开发工具分类中的「开发提示词」卡片
+
+**配置**（`src/config/prompt.config.js`）：
+
+```js
+export const promptConfig = {
+  enabled: true,         // 是否展示提示词板块及导航入口
+  title: '开发提示词',   // 板块标题
+  items: [
+    {
+      id: 'code-review',           // 唯一标识
+      title: '代码审查',            // 提示词名称
+      tags: ['代码'],              // 分类标签（支持多标签）
+      content: '请作为资深开发者...',  // 内联内容
+      // url: 'https://...',       // 可选：从远程 URL 拉取
+      // file: 'code-review',      // 可选：从 /prompt/code-review.md 加载
+    },
+  ],
+}
+```
+
+- `enabled` 为 `false` 时，顶部导航和工具卡片中的提示词入口会隐藏
+
+**数据优先级**：`url` > `file`（本地 .md）> `content`
+
+**本地 .md 文件**（`public/prompt/` 目录）：
+
+```md
+---
+title: 代码审查
+tags: 代码, 测试
+---
+
+提示词正文内容...
+```
+
+- 支持搜索、按标签筛选、一键复制
+- 新增 .md 文件后，在 `prompt.config.js` 的 `items` 中增加对应条目即可
+
 ## 项目结构
 
 ```
 ├── src/
 │   ├── config/
-│   │   └── nav.config.js   ← 配置入口
+│   │   ├── nav.config.js    ← 工具导航配置
+│   │   └── prompt.config.js ← 提示词配置
+│   ├── views/
+│   │   ├── HomeView.vue     ← 首页（工具导航）
+│   │   └── PromptsView.vue  ← 提示词页
 │   ├── components/
 │   │   ├── AdSlot.vue
 │   │   ├── CategorySection.vue
+│   │   ├── FilterTabs.vue
 │   │   ├── NoticeBoard.vue
+│   │   ├── PromptCard.vue
+│   │   ├── PromptSection.vue
 │   │   ├── QrCodeCard.vue
+│   │   ├── SearchBar.vue
 │   │   ├── SidebarQrCodes.vue
 │   │   └── ToolCard.vue
+│   ├── composables/
+│   │   ├── useFavorites.js
+│   │   └── usePrompts.js
+│   ├── router/
+│   │   └── index.js         ← 路由（/ 首页、/prompts 提示词）
 │   ├── App.vue
 │   ├── main.js
 │   └── style.css
+├── public/
+│   ├── prompt/              ← 提示词 .md 文件
+│   │   └── *.md
+│   └── favicon.svg
 ├── index.html
 ├── package.json
 └── vite.config.js
@@ -198,5 +262,6 @@ groupCode: {
 ## 技术栈
 
 - Vue 3（Composition API）
+- Vue Router 5（Hash 模式，适配 GitHub Pages）
 - Vite 5
 - 纯静态，无后端

@@ -5,6 +5,8 @@ defineProps({
   desc: { type: String, default: '' },
   icon: { type: String, default: '' },
   favorited: { type: Boolean, default: false },
+  /** 站内链接：使用 router-link，不新开标签 */
+  internal: { type: Boolean, default: false },
 })
 defineEmits(['toggle-favorite'])
 </script>
@@ -12,6 +14,7 @@ defineEmits(['toggle-favorite'])
 <template>
   <div class="tool-card">
     <button
+      v-if="!internal"
       type="button"
       class="tool-card__star"
       :aria-label="favorited ? '取消收藏' : '收藏'"
@@ -24,10 +27,12 @@ defineEmits(['toggle-favorite'])
         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
       </svg>
     </button>
-    <a
-      :href="url"
-      target="_blank"
-      rel="noopener noreferrer"
+    <component
+      :is="internal ? 'router-link' : 'a'"
+      :to="internal ? url : undefined"
+      :href="internal ? undefined : url"
+      :target="internal ? undefined : '_blank'"
+      :rel="internal ? undefined : 'noopener noreferrer'"
       class="tool-card__link"
     >
       <span v-if="icon" class="tool-card__icon" aria-hidden="true">{{ icon }}</span>
@@ -36,7 +41,7 @@ defineEmits(['toggle-favorite'])
         <span v-if="desc" class="tool-card__desc">{{ desc }}</span>
       </div>
       <span class="tool-card__arrow" aria-hidden="true">→</span>
-    </a>
+    </component>
   </div>
 </template>
 

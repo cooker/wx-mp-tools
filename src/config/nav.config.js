@@ -5,7 +5,7 @@
  * 配置说明：
  * - site: 站点标题、描述等
  * - categories: 分类列表，每个分类包含 name、icon(可选)、items
- * - items: 链接列表，每项包含 name、url、desc(可选)、icon(可选)
+ * - items: 链接列表，每项包含 name、url、desc(可选)、icon(可选)、internal(可选，站内链接)
  * - ad: 底部广告位，可选 image / html / link 三种方式
  * - notices: 右侧公告列表，支持点击跳转
  * - rewardCode: 赞赏码（微信/支付宝收款码图片）
@@ -70,6 +70,7 @@ export const navConfig = {
       icon: '⚙️',
       size: 'md', // sm | md | lg (bento span)
       items: [
+        { name: '开发提示词', url: '/prompts', desc: 'AI 提示词库，一键复制', icon: '💬', internal: true },
         { name: 'IDEA 激活', url: 'https://hapgpt.com/archives/1752542998485', desc: 'IDEA 永久激活', icon: '📝' },
         { name: '视频下载', url: 'https://pan.quark.cn/s/9532d26de8eb', desc: '视频下载', icon: '🎬' },
         { name: '炒股', url: 'https://chengzuopeng.github.io/stock-dashboard/eod-picker', desc: '炒股', icon: '🌊' },

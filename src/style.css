@@ -10,7 +10,7 @@
   --accent: #58a6ff;
   --accent-hover: #79b8ff;
   --font-display: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
   --radius: 6px;
   --radius-lg: 8px;
   --transition: 200ms ease;
