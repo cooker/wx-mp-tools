@@ -75,6 +75,8 @@ export const navConfig = {
         { name: '炒股', url: 'https://chengzuopeng.github.io/stock-dashboard/eod-picker', desc: '炒股', icon: '🌊' },
         { name: '🎅 ', url: 'http://x67.top/sdm1/#1769562997258', desc: '圣诞帽生成器', icon: '🎅 ' },
         { name: 'GitHub加速 🇺🇸', url: 'https://play.ruanyazyk.com/github.html', desc: 'GitHub加速', icon: '🇺🇸' },
+        { name: 'Windows 启动盘', url: 'https://rufus.ie/zh/', desc: '启动盘制作', icon: '💻' },
+        { name: '个人播客', url: 'https://tianji.dev/', desc: '网站监控', icon: '🌍' },
       ],
     },
     {
@@ -101,6 +103,7 @@ export const navConfig = {
         { name: '磁力搜索', url: 'https://knaben.org/search', desc: '磁力搜索', icon: '🔍' },
         { name: '相册服务', url: 'https://immich.app/', desc: '相册服务', icon: '📷' },
         { name: '中文播客榜', url: 'https://xyzrank.com', desc: '中文播客榜', icon: '🎵' },
+        { name: '天气时钟', url: 'https://teojs.github.io/clock-dashboard/', desc: '天气时钟', icon: '🌤️' },
         { name: 'windows自动登录', url: 'https://learn.microsoft.com/en-us/sysinternals/downloads/autologon', desc: 'windows自动登录', icon: '💻' },
       ],
     },
