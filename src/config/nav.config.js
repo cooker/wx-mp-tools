@@ -104,6 +104,7 @@ export const navConfig = {
         { name: 'Wechat文章', url: 'https://cooker.github.io/wx-mp-blank', desc: '公众号文字排版', icon: '💬' },
         { name: '废话生成器', url: 'http://cooker.github.io/wx-mp-dog', desc: '废话生成器', icon: '💬' },
         { name: '九宫格人像', url: 'http://cooker.github.io/wx-mp-face', desc: '九宫格人像', icon: '👤' },
+        { name: '闪图', url: 'https://x.xiaochungu.xyz', desc: '3秒销毁', icon: '🖼️' },
       ],
     },
     {
