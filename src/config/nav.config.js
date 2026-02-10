@@ -106,6 +106,7 @@ export const navConfig = {
         { name: '九宫格人像', url: 'http://cooker.github.io/wx-mp-face', desc: '九宫格人像', icon: '👤' },
         { name: '闪图', url: 'https://x.xiaochungu.xyz', desc: '3秒销毁', icon: '🖼️' },
         { name: '公众号图片导出', url: 'https://g.xiaochungu.xyz', desc: '公众号图片导出', icon: '🖼️' },
+        { name: '精美封面图', url: 'https://imgx.zzao.club/', desc: '选择一个模板，一行代码生成精美封面图', icon: '📷' },
       ],
     },
     {
