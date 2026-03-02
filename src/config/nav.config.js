@@ -123,6 +123,7 @@ export const navConfig = {
         { name: '中文播客榜', url: 'https://xyzrank.com', desc: '中文播客榜', icon: '🎵' },
         { name: '天气时钟', url: 'https://teojs.github.io/clock-dashboard/', desc: '天气时钟', icon: '🌤️' },
         { name: 'windows自动登录', url: 'https://learn.microsoft.com/en-us/sysinternals/downloads/autologon', desc: 'windows自动登录', icon: '💻' },
+        { name: 'AI 设计稿', url: 'https://www.mockdown.design/', desc: 'markdown 设计稿', icon: '🎵' },
       ],
     },
   ],
