@@ -47,6 +47,11 @@ const isPrompts = computed(() => route.name === 'prompts')
 
   <footer class="footer">
     <p>编辑 <code>src/config/nav.config.js</code>、<code>src/config/prompt.config.js</code> 快速配置</p>
+    <p class="footer__links">
+      <a href="./site-privacy.html" target="_blank" rel="noopener">隐私协议</a>
+      <span class="footer__sep" aria-hidden="true">·</span>
+      <a href="./terms.html" target="_blank" rel="noopener">服务条款</a>
+    </p>
   </footer>
 </template>
 
@@ -131,6 +136,27 @@ const isPrompts = computed(() => route.name === 'prompts')
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+}
+
+.footer__links {
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.footer__links a {
+  color: var(--text-muted);
+  transition: color var(--transition);
+}
+.footer__links a:hover {
+  color: var(--accent);
+}
+
+.footer__sep {
+  color: var(--text-muted);
+  opacity: 0.7;
 }
 
 @keyframes fadeIn {
