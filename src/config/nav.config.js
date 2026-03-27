@@ -125,6 +125,7 @@ export const navConfig = {
         { name: '温度地图', url: 'https://teojs.github.io/clock-dashboard/', desc: '温度地图', icon: '🌞' },
         { name: 'windows自动登录', url: 'https://learn.microsoft.com/en-us/sysinternals/downloads/autologon', desc: 'windows自动登录', icon: '💻' },
         { name: 'AI 设计稿', url: 'https://www.mockdown.design/', desc: 'markdown 设计稿', icon: '🎵' },
+        { name: 'Linux 诊断工具', url: 'https://github.com/pranshuparmar/witr', desc: 'Linux 诊断工具', icon: '💬' },
       ],
     },
   ],
