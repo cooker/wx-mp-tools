@@ -7,6 +7,12 @@ export const router = createRouter({
   routes: [
     { path: '/', name: 'home', component: HomeView, meta: { title: '工具导航' } },
     { path: '/prompts', name: 'prompts', component: PromptsView, meta: { title: '开发提示词' } },
+    {
+      path: '/sql',
+      name: 'sql',
+      component: () => import('../modules/sql/SqlTemplatesView.vue'),
+      meta: { title: 'SQL 模板' },
+    },
   ],
 })
 

@@ -85,6 +85,7 @@ export const navConfig = {
       size: 'md', // sm | md | lg (bento span)
       items: [
         { name: '开发提示词', url: '/prompts', desc: 'AI 提示词库，一键复制', icon: '💬', internal: true },
+        { name: 'SQL 模板', url: '/sql', desc: '按 SQL.md 约定的 DDL/QUERY 等分节模板', icon: '🗃️', internal: true },
         { name: 'IDEA 激活', url: 'https://hapgpt.com/archives/1752542998485', desc: 'IDEA 永久激活', icon: '📝' },
         { name: '视频下载', url: 'https://pan.quark.cn/s/9532d26de8eb', desc: '视频下载', icon: '🎬' },
         { name: '炒股', url: 'https://chengzuopeng.github.io/stock-dashboard/eod-picker', desc: '炒股', icon: '🌊' },

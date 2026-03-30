@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { navConfig } from '../../config/nav.config.js'
+import { sqlConfig } from '../../config/sql.config.js'
 import CategorySection from './components/CategorySection.vue'
 import SearchBar from './components/SearchBar.vue'
 import FilterTabs from './components/FilterTabs.vue'
@@ -44,6 +45,7 @@ const filteredCategories = computed(() => {
     .map((c) => ({
       ...c,
       items: c.items.filter((item) => {
+        if (item.url === '/sql' && !sqlConfig?.enabled) return false
         if (!matchItem(item, q)) return false
         if (favOnly && !isFavorited(item.url)) return false
         return true

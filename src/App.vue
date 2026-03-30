@@ -3,14 +3,20 @@ import { computed } from 'vue'
 import { useRoute, RouterView } from 'vue-router'
 import { navConfig } from './config/nav.config.js'
 import { promptConfig } from './config/prompt.config.js'
+import { sqlConfig } from './config/sql.config.js'
 
 const route = useRoute()
 const { site } = navConfig
 
 const showPromptsLink = computed(() => Boolean(promptConfig?.enabled))
+const showSqlLink = computed(() => Boolean(sqlConfig?.enabled))
+const showHeaderNav = computed(() => showPromptsLink.value || showSqlLink.value)
 
 const isHome = computed(() => route.name === 'home')
 const isPrompts = computed(() => route.name === 'prompts')
+const isSql = computed(() => route.name === 'sql')
+
+const sqlNavLabel = computed(() => sqlConfig?.navLabel || 'SQL 模板')
 </script>
 
 <template>
@@ -19,7 +25,7 @@ const isPrompts = computed(() => route.name === 'prompts')
       <h1 class="header__title">
         <router-link to="/" class="header__title-link">{{ site.title }}</router-link>
       </h1>
-      <nav v-if="showPromptsLink" class="header__nav" aria-label="主导航">
+      <nav v-if="showHeaderNav" class="header__nav" aria-label="主导航">
         <router-link
           to="/"
           class="header__nav-link"
@@ -28,11 +34,20 @@ const isPrompts = computed(() => route.name === 'prompts')
           工具
         </router-link>
         <router-link
+          v-if="showPromptsLink"
           to="/prompts"
           class="header__nav-link"
           :class="{ 'header__nav-link--active': isPrompts }"
         >
           提示词
+        </router-link>
+        <router-link
+          v-if="showSqlLink"
+          to="/sql"
+          class="header__nav-link"
+          :class="{ 'header__nav-link--active': isSql }"
+        >
+          {{ sqlNavLabel }}
         </router-link>
       </nav>
     </div>
