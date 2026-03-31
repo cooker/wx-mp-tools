@@ -6,6 +6,8 @@
  * - site: 站点标题、描述等
  * - categories: 分类列表，每个分类包含 name、icon(可选)、items
  * - items: 链接列表，每项包含 name、url、desc(可选)、icon(可选)、internal(可选，站内链接)
+ *   - url 支持 string 或 string[]（外链数组时首页会异步探测可用地址并自动选择）
+ * - urlResolver: 链接探测配置（可选），如 timeoutMs、cacheTtlMs
  * - ad: 底部广告位，支持多个广告轮播，每项可选 image / html / link
  * - notices: 右侧公告列表，支持点击跳转
  * - rewardCode: 赞赏码（微信/支付宝收款码图片）
@@ -13,6 +15,11 @@
  */
 
 export const navConfig = {
+  urlResolver: {
+    timeoutMs: 2500,
+    cacheTtlMs: 6 * 60 * 60 * 1000,
+  },
+
   site: {
     title: '工具导航',
     description: '常用开发与效率工具集合，一键直达',
@@ -50,7 +57,9 @@ export const navConfig = {
 
   /**
    * 底部广告位：ad.enabled 为 true 时展示，支持多广告轮播
-   * 图片展示：宽 100%、高 120px，平铺拉伸填充（object-fit: fill）
+   * 图片展示：宽 100%、高 120px；可按广告项配置 image.fit/image.position
+   * - image.fit: fill | cover | contain | none | scale-down（默认 fill）
+   * - image.position: 任意 object-position 值（默认 center）
    * 推荐尺寸：1200×120（约 10:1）或 1200×80（15:1），横版长图适配更好
    */
   ad: {
@@ -64,6 +73,8 @@ export const navConfig = {
           src: 'https://fastly.jsdelivr.net/gh/bucketio/img14@main/2026/01/27/1769477339654-79fbee3a-ebf3-436a-8981-1c94099ca3fb.jpg',
           url: 'https://www.aliyun.com/minisite/goods?userCode=md7pdz8m',
           alt: '阿里云推广',
+          fit: 'scale-down',
+          position: 'center',
         },
       },
       {
@@ -71,6 +82,8 @@ export const navConfig = {
           src: 'https://cdn.jsdelivr.net/gh/gulugulu-lab/img0@main/2026/02/06/qUXEih.jpg',
           url: 'https://www.adobe.com/cn/',
           alt: 'Adobe 全家桶',
+          fit: 'cover-down',
+          position: 'center',
         },
       }
       // { link: { text: '赞助商链接', url: 'https://example.com' } },
@@ -124,7 +137,7 @@ export const navConfig = {
         { name: '温度地图', url: 'https://teojs.github.io/clock-dashboard/', desc: '温度地图', icon: '🌞' },
         { name: 'windows自动登录', url: 'https://learn.microsoft.com/en-us/sysinternals/downloads/autologon', desc: 'windows自动登录', icon: '💻' },
         { name: 'AI 设计稿', url: 'https://www.mockdown.design/', desc: 'markdown 设计稿', icon: '🎵' },
-        { name: 'Linux 诊断工具', url: 'https://github.com/pranshuparmar/witr', desc: 'Linux 诊断工具', icon: '💬' },
+        { name: 'Linux 诊断工具', url: ['https://github.com/pranshuparmar/witr'], desc: 'Linux 诊断工具', icon: '💬' },
       ],
     },
   ],

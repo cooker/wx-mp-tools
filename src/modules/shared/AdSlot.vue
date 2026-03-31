@@ -59,6 +59,16 @@ function getItemType(item) {
   return null
 }
 
+function getImageFit(item) {
+  const fit = item?.image?.fit
+  const allowed = new Set(['fill', 'contain', 'cover', 'none', 'scale-down'])
+  return allowed.has(fit) ? fit : 'fill'
+}
+
+function getImagePosition(item) {
+  return item?.image?.position || 'center'
+}
+
 const currentItem = computed(() => items.value[currentIndex.value] || null)
 const currentType = computed(() => (currentItem.value ? getItemType(currentItem.value) : null))
 const hasMultiple = computed(() => items.value.length > 1)
@@ -83,7 +93,12 @@ const hasMultiple = computed(() => items.value.length > 1)
             rel="noopener noreferrer sponsored"
             class="ad-slot__image"
           >
-            <img :src="item.image.src" :alt="item.image.alt || '广告'" loading="lazy" />
+            <img
+              :src="item.image.src"
+              :alt="item.image.alt || '广告'"
+              loading="lazy"
+              :style="{ objectFit: getImageFit(item), objectPosition: getImagePosition(item) }"
+            />
           </a>
           <a
             v-else-if="getItemType(item) === 'link'"

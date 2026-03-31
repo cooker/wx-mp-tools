@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { navConfig } from '../../config/nav.config.js'
 import { sqlConfig } from '../../config/sql.config.js'
 import CategorySection from './components/CategorySection.vue'
@@ -13,6 +13,10 @@ import { useFavorites } from '../../composables/useFavorites.js'
 const { has: isFavorited, toggle: toggleFavorite } = useFavorites()
 
 const { site, categories, ad = {}, notices = {}, rewardCode = {}, groupCode = {} } = navConfig
+const URL_RESOLVE_CACHE_KEY = 'tool-nav-url-resolve-cache-v1'
+const URL_RESOLVE_TTL_MS = Number(navConfig?.urlResolver?.cacheTtlMs) || 6 * 60 * 60 * 1000
+const URL_CHECK_TIMEOUT_MS = Number(navConfig?.urlResolver?.timeoutMs) || 2500
+const resolvedUrlMap = ref({})
 
 const searchQuery = ref('')
 const activeCategory = ref('')
@@ -35,6 +39,150 @@ function matchItem(item, q) {
   return name.includes(q) || desc.includes(q)
 }
 
+function getItemUrlCandidates(item) {
+  if (Array.isArray(item.url)) return item.url.filter(Boolean)
+  return item.url ? [item.url] : []
+}
+
+function getItemResolvedUrl(item) {
+  const candidates = getItemUrlCandidates(item)
+  const key = getItemUrlKey(item)
+  return resolvedUrlMap.value[key] || candidates[0] || ''
+}
+
+function getItemUrlKey(item) {
+  if (item.internal) return String(item.url || item.name || '')
+  if (item.id) return String(item.id)
+  const candidates = getItemUrlCandidates(item)
+  return `${item.name || 'item'}::${candidates[0] || ''}`
+}
+
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),
+  ])
+}
+
+async function isReachable(url) {
+  try {
+    await withTimeout(
+      fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store' }),
+      URL_CHECK_TIMEOUT_MS
+    )
+    return true
+  } catch {
+    return false
+  }
+}
+
+function loadResolveCache() {
+  try {
+    const raw = localStorage.getItem(URL_RESOLVE_CACHE_KEY)
+    if (!raw) return {}
+    const parsed = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object') return {}
+    return parsed
+  } catch {
+    return {}
+  }
+}
+
+function saveResolveCache(map) {
+  try {
+    localStorage.setItem(URL_RESOLVE_CACHE_KEY, JSON.stringify(map))
+  } catch {}
+}
+
+function isItemFavorited(item) {
+  const key = getItemUrlKey(item)
+  // 兼容历史收藏：旧版本按 url 存储
+  return isFavorited(key) || isFavorited(getItemResolvedUrl(item))
+}
+
+function toggleItemFavorite(key, currentUrl) {
+  const hasKey = isFavorited(key)
+  const hasLegacy = currentUrl ? isFavorited(currentUrl) : false
+  if (hasLegacy && !hasKey) {
+    toggleFavorite(currentUrl)
+    toggleFavorite(key)
+    return
+  }
+  toggleFavorite(key)
+}
+
+async function resolveUrls() {
+  const cache = loadResolveCache()
+  const nextResolved = { ...resolvedUrlMap.value }
+  const nextCache = { ...cache }
+  const now = Date.now()
+
+  const tasks = []
+  categories.forEach((cat) => {
+    cat.items.forEach((item) => {
+      if (item.internal) return
+      const candidates = getItemUrlCandidates(item)
+      if (candidates.length <= 1) return
+      tasks.push({ item, candidates, key: getItemUrlKey(item) })
+    })
+  })
+
+  for (const task of tasks) {
+    const cacheEntry = nextCache[task.key]
+    if (cacheEntry?.url && now - Number(cacheEntry.ts || 0) < URL_RESOLVE_TTL_MS) {
+      nextResolved[task.key] = cacheEntry.url
+      continue
+    }
+    let picked = task.candidates[0]
+    for (const candidate of task.candidates) {
+      // 弱连通探测：能完成请求即认为可用优先
+      if (await isReachable(candidate)) {
+        picked = candidate
+        break
+      }
+    }
+    nextResolved[task.key] = picked
+    nextCache[task.key] = { url: picked, ts: now }
+  }
+  // 清理无效 key，避免缓存无限增长
+  const activeKeys = new Set(tasks.map((t) => t.key))
+  Object.keys(nextCache).forEach((k) => {
+    if (!activeKeys.has(k)) delete nextCache[k]
+  })
+
+  resolvedUrlMap.value = nextResolved
+  saveResolveCache(nextCache)
+}
+
+onMounted(() => {
+  const cache = loadResolveCache()
+  const now = Date.now()
+  const warmup = {}
+  Object.keys(cache).forEach((k) => {
+    const entry = cache[k]
+    if (entry?.url && now - Number(entry.ts || 0) < URL_RESOLVE_TTL_MS) {
+      warmup[k] = entry.url
+    }
+  })
+  resolvedUrlMap.value = warmup
+  resolveUrls()
+})
+
+function decorateItem(item, categoryId) {
+  const candidates = getItemUrlCandidates(item)
+  const resolvedUrl = getItemResolvedUrl(item)
+  const primaryUrl = candidates[0] || resolvedUrl
+  const hasFallbacks = candidates.length > 1
+  const usingFallback = hasFallbacks && resolvedUrl && resolvedUrl !== primaryUrl
+  return {
+    ...item,
+    categoryId,
+    url: resolvedUrl,
+    urlKey: getItemUrlKey(item),
+    usingFallback,
+  }
+}
+
 const filteredCategories = computed(() => {
   const q = searchDebounced.value
   const cat = activeCategory.value
@@ -45,11 +193,12 @@ const filteredCategories = computed(() => {
     .map((c) => ({
       ...c,
       items: c.items.filter((item) => {
-        if (item.url === '/sql' && !sqlConfig?.enabled) return false
+        const currentUrl = getItemResolvedUrl(item)
+        if (currentUrl === '/sql' && !sqlConfig?.enabled) return false
         if (!matchItem(item, q)) return false
-        if (favOnly && !isFavorited(item.url)) return false
+        if (favOnly && !isItemFavorited(item)) return false
         return true
-      }),
+      }).map((item) => decorateItem(item, c.id)),
     }))
     .filter((c) => c.items.length > 0)
 })
@@ -63,7 +212,7 @@ const hasNoResults = computed(() =>
 const allItemsFlat = computed(() => {
   const items = []
   categories.forEach((c) => {
-    c.items.forEach((item) => items.push({ ...item, categoryId: c.id }))
+    c.items.forEach((item) => items.push(decorateItem(item, c.id)))
   })
   return items
 })
@@ -71,7 +220,7 @@ const allItemsFlat = computed(() => {
 const favoriteItems = computed(() => {
   const q = searchDebounced.value
   return allItemsFlat.value.filter((item) => {
-    if (!isFavorited(item.url)) return false
+    if (!isItemFavorited(item)) return false
     return matchItem(item, q)
   })
 })
@@ -115,8 +264,8 @@ const favoriteItems = computed(() => {
           id="favorites"
           name="收藏的工具"
           :items="favoriteItems"
-          :is-favorited="isFavorited"
-          @toggle-favorite="toggleFavorite"
+          :is-favorited="(key, url) => isFavorited(key) || (!!url && isFavorited(url))"
+          @toggle-favorite="({ key, url }) => toggleItemFavorite(key, url)"
         />
       </div>
     </div>
@@ -131,8 +280,8 @@ const favoriteItems = computed(() => {
           :icon="cat.icon"
           :items="cat.items"
           :index="index"
-          :is-favorited="isFavorited"
-          @toggle-favorite="toggleFavorite"
+          :is-favorited="(key, url) => isFavorited(key) || (!!url && isFavorited(url))"
+          @toggle-favorite="({ key, url }) => toggleItemFavorite(key, url)"
         />
       </main>
 

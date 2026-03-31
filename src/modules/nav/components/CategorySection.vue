@@ -35,14 +35,15 @@ const gridClass = computed(() => {
     <div class="category__grid">
       <ToolCard
         v-for="(item, i) in items"
-        :key="item.url || item.name || i"
+        :key="item.urlKey || item.url || item.name || i"
         :name="item.name"
         :url="item.url"
         :desc="item.desc"
         :icon="item.icon"
-        :favorited="!item.internal && isFavorited(item.url)"
+        :using-fallback="!!item.usingFallback"
+        :favorited="!item.internal && isFavorited(item.urlKey || item.url, item.url)"
         :internal="!!item.internal"
-        @toggle-favorite="emit('toggle-favorite', item.url)"
+        @toggle-favorite="emit('toggle-favorite', { key: item.urlKey || item.url, url: item.url })"
       />
     </div>
   </section>

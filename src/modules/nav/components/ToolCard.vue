@@ -4,6 +4,7 @@ defineProps({
   url: { type: String, required: true },
   desc: { type: String, default: '' },
   icon: { type: String, default: '' },
+  usingFallback: { type: Boolean, default: false },
   favorited: { type: Boolean, default: false },
   /** 站内链接：使用 router-link，不新开标签 */
   internal: { type: Boolean, default: false },
@@ -13,6 +14,14 @@ defineEmits(['toggle-favorite'])
 
 <template>
   <div class="tool-card">
+    <span
+      v-if="usingFallback && !internal"
+      class="tool-card__fallback-badge"
+      title="当前使用备用地址"
+      aria-label="当前使用备用地址"
+    >
+      备用
+    </span>
     <button
       v-if="!internal"
       type="button"
@@ -52,6 +61,20 @@ defineEmits(['toggle-favorite'])
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   transition: border-color var(--transition), background var(--transition);
+}
+
+.tool-card__fallback-badge {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 1;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  color: #7a4b00;
+  background: #fff4d6;
+  border: 1px solid #ffd27a;
 }
 .tool-card:hover {
   border-color: var(--accent);
