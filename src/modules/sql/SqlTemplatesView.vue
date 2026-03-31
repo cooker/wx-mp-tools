@@ -8,6 +8,7 @@ import { oneDark } from '@codemirror/theme-one-dark'
 import { format } from 'sql-formatter'
 import { useSqlTemplates } from '../../composables/useSqlTemplates.js'
 import { SQL_SECTION_ORDER } from '../../utils/parseSqlTemplateMd.js'
+import { renderDevMarkdownHtml } from '../../utils/renderDevMarkdown.js'
 
 /** 供模板遍历分节 Tab（与 SQL.md 一致） */
 const sectionOrder = SQL_SECTION_ORDER
@@ -20,6 +21,8 @@ const activeSection = ref('')
 const blockIndex = ref(0)
 const editorHost = ref(null)
 let editorView = null
+/** DDL 多分块时每块一个 EditorView */
+const ddlEditors = new Map()
 
 watch(
   templates,
@@ -66,10 +69,120 @@ const currentSql = computed(() => {
   return b?.sql || ''
 })
 
+const isDdlSection = computed(() => activeSection.value === 'DDL')
+const isDevSection = computed(() => activeSection.value === 'DEV')
+
+function sqlEditorExtensions(scrollerMax = 'min(55vh, 480px)') {
+  return [
+    basicSetup,
+    sql(),
+    oneDark,
+    EditorView.theme({
+      '&': { fontSize: '13px' },
+      '.cm-editor': { borderRadius: 'var(--radius)' },
+      '.cm-scroller': { minHeight: '240px', maxHeight: scrollerMax },
+    }),
+  ]
+}
+
 function destroyEditor() {
   if (editorView) {
     editorView.destroy()
     editorView = null
+  }
+}
+
+function destroyAllDdlEditors() {
+  ddlEditors.forEach((v) => v.destroy())
+  ddlEditors.clear()
+}
+
+function ddlAnchorId(index) {
+  const id = selectedId.value || 'tpl'
+  return `sql-ddl-${id}-${index}`
+}
+
+function devAnchorId(index) {
+  const id = selectedId.value || 'tpl'
+  return `sql-dev-${id}-${index}`
+}
+
+function scrollToDevFragment(index) {
+  const el = document.getElementById(devAnchorId(index))
+  el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+function scrollToDdlFragment(index) {
+  const el = document.getElementById(ddlAnchorId(index))
+  el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+function bindDdlEditorHost(el, index) {
+  if (!el) {
+    const v = ddlEditors.get(index)
+    if (v) {
+      v.destroy()
+      ddlEditors.delete(index)
+    }
+    return
+  }
+  const blocks = currentBlocks.value
+  const sqlText = blocks[index]?.sql ?? ''
+  if (ddlEditors.has(index)) {
+    const v = ddlEditors.get(index)
+    if (v.dom.parentElement !== el) {
+      v.destroy()
+      ddlEditors.delete(index)
+    } else {
+      const cur = v.state.doc.toString()
+      if (cur !== sqlText) {
+        v.dispatch({
+          changes: { from: 0, to: v.state.doc.length, insert: sqlText },
+        })
+      }
+      return
+    }
+  }
+  const view = new EditorView({
+    parent: el,
+    state: EditorState.create({
+      doc: sqlText,
+      extensions: sqlEditorExtensions('min(40vh, 400px)'),
+    }),
+  })
+  ddlEditors.set(index, view)
+}
+
+function formatDdlFragment(index) {
+  const v = ddlEditors.get(index)
+  if (!v) return
+  const raw = v.state.doc.toString()
+  try {
+    const out = format(raw, { language: 'mysql' })
+    v.dispatch({
+      changes: { from: 0, to: v.state.doc.length, insert: out },
+    })
+  } catch {
+    /* ignore */
+  }
+}
+
+async function copyDdlFragment(index) {
+  const v = ddlEditors.get(index)
+  if (!v) return
+  try {
+    await navigator.clipboard.writeText(v.state.doc.toString())
+  } catch {
+    /* ignore */
+  }
+}
+
+async function copyDevRaw(index) {
+  const text = currentBlocks.value[index]?.sql ?? ''
+  try {
+    await navigator.clipboard.writeText(text)
+  } catch {
+    /* ignore */
   }
 }
 
@@ -79,16 +192,7 @@ function createEditor() {
     parent: editorHost.value,
     state: EditorState.create({
       doc: currentSql.value || '',
-      extensions: [
-        basicSetup,
-        sql(),
-        oneDark,
-        EditorView.theme({
-          '&': { fontSize: '13px' },
-          '.cm-editor': { borderRadius: 'var(--radius)' },
-          '.cm-scroller': { minHeight: '240px', maxHeight: 'min(55vh, 480px)' },
-        }),
-      ],
+      extensions: sqlEditorExtensions(),
     }),
   })
 }
@@ -105,6 +209,7 @@ function syncDoc() {
 
 function ensureEditor() {
   nextTick(() => {
+    if (isDdlSection.value || isDevSection.value) return
     if (!editorHost.value) return
     if (!editorView) createEditor()
     syncDoc()
@@ -125,6 +230,24 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   destroyEditor()
+  destroyAllDdlEditors()
+})
+
+watch(activeSection, (s) => {
+  if (s === 'DDL' || s === 'DEV') {
+    destroyEditor()
+  } else {
+    destroyAllDdlEditors()
+    ensureEditor()
+  }
+})
+
+watch(selectedId, () => {
+  destroyAllDdlEditors()
+  if (!isDdlSection.value) {
+    destroyEditor()
+    ensureEditor()
+  }
 })
 
 function onFormat() {
@@ -230,7 +353,74 @@ const metaMissing = computed(() => {
           </button>
         </div>
 
-        <div v-if="activeSection && currentBlocks.length" class="sql-blocks">
+        <div v-if="activeSection === 'DDL' && currentBlocks.length" class="sql-blocks sql-blocks--ddl">
+          <p class="sql-blocks__anchor-hint">点击下方标签可滚动到对应片段</p>
+          <div class="sql-blocks__list" role="list">
+            <button
+              v-for="(b, i) in currentBlocks"
+              :key="i"
+              type="button"
+              class="sql-blocks__chip sql-blocks__chip--anchor"
+              @click="scrollToDdlFragment(i)"
+            >
+              {{ b.title || `片段 ${i + 1}` }}
+            </button>
+          </div>
+          <div class="sql-ddl__stack">
+            <article
+              v-for="(b, i) in currentBlocks"
+              :id="ddlAnchorId(i)"
+              :key="`${selectedId}-ddl-${i}`"
+              class="sql-ddl__fragment"
+            >
+              <h3 class="sql-ddl__fragment-title">{{ b.title || `片段 ${i + 1}` }}</h3>
+              <p v-if="b.note" class="sql-blocks__note">{{ b.note }}</p>
+              <div class="sql-editor-toolbar">
+                <button type="button" class="sql-btn" @click="formatDdlFragment(i)">格式化</button>
+                <button type="button" class="sql-btn" @click="copyDdlFragment(i)">复制</button>
+              </div>
+              <div
+                class="sql-editor-host"
+                :ref="(el) => bindDdlEditorHost(el, i)"
+              />
+            </article>
+          </div>
+        </div>
+
+        <div v-else-if="activeSection === 'DEV' && currentBlocks.length" class="sql-blocks sql-blocks--dev">
+          <p class="sql-blocks__anchor-hint">点击下方标签可锚点跳转；正文由注释内容渲染为 Markdown，便于阅读</p>
+          <div class="sql-blocks__list" role="list">
+            <button
+              v-for="(b, i) in currentBlocks"
+              :key="i"
+              type="button"
+              class="sql-blocks__chip sql-blocks__chip--anchor"
+              @click="scrollToDevFragment(i)"
+            >
+              {{ b.title || `片段 ${i + 1}` }}
+            </button>
+          </div>
+          <div class="sql-dev__stack">
+            <article
+              v-for="(b, i) in currentBlocks"
+              :id="devAnchorId(i)"
+              :key="`${selectedId}-dev-${i}`"
+              class="sql-dev__fragment"
+            >
+              <h3 class="sql-ddl__fragment-title">{{ b.title || `片段 ${i + 1}` }}</h3>
+              <p v-if="b.note" class="sql-blocks__note">{{ b.note }}</p>
+              <div class="sql-editor-toolbar">
+                <button type="button" class="sql-btn" @click="copyDevRaw(i)">复制源码</button>
+              </div>
+              <div
+                class="sql-dev-md"
+                v-html="renderDevMarkdownHtml(b.sql)"
+              />
+            </article>
+          </div>
+        </div>
+
+        <div v-else-if="activeSection && currentBlocks.length" class="sql-blocks">
           <div class="sql-blocks__list" role="list">
             <button
               v-for="(b, i) in currentBlocks"
@@ -435,6 +625,144 @@ const metaMissing = computed(() => {
   cursor: not-allowed;
 }
 
+.sql-blocks__anchor-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0 0 0.5rem;
+}
+
+.sql-ddl__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.sql-ddl__fragment {
+  scroll-margin-top: 5.5rem;
+}
+
+.sql-ddl__fragment-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 0.35rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.sql-dev__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.sql-dev__fragment {
+  scroll-margin-top: 5.5rem;
+}
+
+.sql-dev-md {
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.15rem;
+  max-height: min(70vh, 720px);
+  overflow: auto;
+}
+
+.sql-dev-md :deep(h1) {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0.75rem 0 0.5rem;
+  color: var(--text);
+}
+.sql-dev-md :deep(h2) {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0.65rem 0 0.4rem;
+  color: var(--text);
+}
+.sql-dev-md :deep(h3) {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0.5rem 0 0.35rem;
+  color: var(--text);
+}
+.sql-dev-md :deep(p) {
+  margin: 0.45rem 0;
+}
+.sql-dev-md :deep(ul),
+.sql-dev-md :deep(ol) {
+  margin: 0.45rem 0;
+  padding-left: 1.35rem;
+}
+.sql-dev-md :deep(li) {
+  margin: 0.2rem 0;
+}
+.sql-dev-md :deep(hr) {
+  border: none;
+  border-top: 1px solid var(--border-subtle);
+  margin: 1rem 0;
+}
+.sql-dev-md :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin: 0.75rem 0;
+}
+.sql-dev-md :deep(th),
+.sql-dev-md :deep(td) {
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.55rem;
+  text-align: left;
+  vertical-align: top;
+}
+.sql-dev-md :deep(th) {
+  background: var(--hover-overlay);
+  font-weight: 600;
+  color: var(--text);
+}
+.sql-dev-md :deep(tr:nth-child(even) td) {
+  background: rgba(0, 0, 0, 0.02);
+}
+.sql-dev-md :deep(pre) {
+  margin: 0.6rem 0;
+  padding: 0.75rem 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow-x: auto;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+.sql-dev-md :deep(code) {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  padding: 0.1em 0.35em;
+  background: var(--hover-overlay);
+  border-radius: 4px;
+}
+.sql-dev-md :deep(pre code) {
+  padding: 0;
+  background: transparent;
+  font-size: 0.85rem;
+}
+.sql-dev-md :deep(blockquote) {
+  margin: 0.5rem 0;
+  padding: 0.35rem 0 0.35rem 0.85rem;
+  border-left: 3px solid var(--accent);
+  color: var(--text-muted);
+}
+.sql-dev-md :deep(a) {
+  color: var(--accent);
+  text-decoration: none;
+}
+.sql-dev-md :deep(a:hover) {
+  text-decoration: underline;
+}
+
 .sql-blocks__list {
   display: flex;
   flex-wrap: wrap;
@@ -457,6 +785,10 @@ const metaMissing = computed(() => {
 .sql-blocks__chip--active {
   color: var(--accent);
   border-color: var(--accent);
+}
+
+.sql-blocks__chip--anchor {
+  cursor: pointer;
 }
 
 .sql-blocks__note {

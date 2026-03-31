@@ -33,7 +33,11 @@ function parseSubsections(text) {
       note = noteMatch[1].trim()
       rest = rest.slice(noteMatch.index + noteMatch[0].length).trim()
     }
-    const sqlMatch = rest.match(/```sql\s*\n([\s\S]*?)```/)
+    // 闭合围栏须单独成行，避免 DEV 块内 `-- ```json` 等行被误判为结束
+    let sqlMatch = rest.match(/```sql\s*\n([\s\S]*?)^```\s*$/m)
+    if (!sqlMatch) {
+      sqlMatch = rest.match(/```sql\s*\n([\s\S]*?)```/)
+    }
     const sql = sqlMatch ? sqlMatch[1].trim() : ''
     blocks.push({ title, note, sql })
   }
