@@ -540,7 +540,7 @@ const visibleCategoriesForTabs = computed(() => {
 
 .layout {
   display: grid;
-  grid-template-columns: 1fr 280px;
+  grid-template-columns: minmax(0, 1fr) minmax(408px, 440px);
   gap: 1.5rem;
   align-items: start;
 }

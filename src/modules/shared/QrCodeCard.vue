@@ -46,7 +46,7 @@ onUnmounted(() => {
         :src="src"
         :alt="title"
         class="qr-card__img"
-        :width="180"
+        :width="160"
         :img-props="{ loading: 'lazy' }"
         preview-disabled
       />
@@ -99,9 +99,10 @@ onUnmounted(() => {
 
 .qr-card__img {
   display: inline-block;
-  width: 180px;
-  height: auto;
-  max-width: 100%;
+  width: 160px;
+  height: 160px;
+  max-width: none;
+  object-fit: cover;
 }
 
 .qr-card :deep(.n-image img) {
@@ -134,10 +135,6 @@ onUnmounted(() => {
   .qr-card__title {
     font-size: 0.82rem;
     margin-bottom: 0.5rem;
-  }
-
-  .qr-card__img {
-    width: 148px;
   }
 
   .qr-card__desc {
