@@ -1,20 +1,46 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import HomeView from '../modules/nav/HomeView.vue'
-import PromptsView from '../modules/prompts/PromptsView.vue'
+
+const loadHomeView = () => import('../modules/nav/HomeView.vue')
+const loadPromptsView = () => import('../modules/prompts/PromptsView.vue')
+const loadSqlView = () => import('../modules/sql/SqlTemplatesView.vue')
+
+const routeComponentLoaders = {
+  home: loadHomeView,
+  prompts: loadPromptsView,
+  sql: loadSqlView,
+}
 
 export const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', name: 'home', component: HomeView, meta: { title: '工具导航' } },
-    { path: '/prompts', name: 'prompts', component: PromptsView, meta: { title: '开发提示词' } },
+    {
+      path: '/',
+      name: 'home',
+      component: loadHomeView,
+      meta: { title: '工具导航' },
+    },
+    {
+      path: '/prompts',
+      name: 'prompts',
+      component: loadPromptsView,
+      meta: { title: '开发提示词' },
+    },
     {
       path: '/sql',
       name: 'sql',
-      component: () => import('../modules/sql/SqlTemplatesView.vue'),
+      component: loadSqlView,
       meta: { title: 'SQL 模板' },
     },
   ],
 })
+
+export async function preloadRouteComponents(names = []) {
+  const tasks = names
+    .map((name) => routeComponentLoaders[name])
+    .filter(Boolean)
+    .map((loader) => loader().catch(() => null))
+  await Promise.all(tasks)
+}
 
 router.afterEach((to) => {
   if (to.meta?.title) {

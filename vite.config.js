@@ -7,4 +7,28 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig({
   plugins: [vue()],
   base: './',
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (
+              id.includes('codemirror') ||
+              id.includes('@codemirror') ||
+              id.includes('@lezer')
+            ) {
+              return 'vendor-codemirror'
+            }
+            if (id.includes('naive-ui')) {
+              return 'vendor-naive'
+            }
+            if (id.includes('marked') || id.includes('dompurify')) {
+              return 'vendor-markdown'
+            }
+          }
+          return undefined
+        },
+      },
+    },
+  },
 })

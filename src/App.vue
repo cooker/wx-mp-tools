@@ -1,9 +1,24 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute, RouterView } from 'vue-router'
+import {
+  NConfigProvider,
+  NDialogProvider,
+  NNotificationProvider,
+  NMessageProvider,
+  NLayout,
+  NLayoutHeader,
+  NLayoutContent,
+  NLayoutFooter,
+  NButton,
+  NSpace,
+  NText,
+  darkTheme,
+} from 'naive-ui'
 import { navConfig } from './config/nav.config.js'
 import { promptConfig } from './config/prompt.config.js'
 import { sqlConfig } from './config/sql.config.js'
+import { naiveThemeOverrides } from './theme/naiveTheme.js'
 
 const route = useRoute()
 const { site } = navConfig
@@ -20,59 +35,69 @@ const sqlNavLabel = computed(() => sqlConfig?.navLabel || 'SQL 模板')
 </script>
 
 <template>
-  <header class="header">
-    <div class="header__inner">
-      <h1 class="header__title">
-        <router-link to="/" class="header__title-link">{{ site.title }}</router-link>
-      </h1>
-      <nav v-if="showHeaderNav" class="header__nav" aria-label="主导航">
-        <router-link
-          to="/"
-          class="header__nav-link"
-          :class="{ 'header__nav-link--active': isHome }"
-        >
-          工具
-        </router-link>
-        <router-link
-          v-if="showPromptsLink"
-          to="/prompts"
-          class="header__nav-link"
-          :class="{ 'header__nav-link--active': isPrompts }"
-        >
-          提示词
-        </router-link>
-        <router-link
-          v-if="showSqlLink"
-          to="/sql"
-          class="header__nav-link"
-          :class="{ 'header__nav-link--active': isSql }"
-        >
-          {{ sqlNavLabel }}
-        </router-link>
-      </nav>
-    </div>
-    <p v-if="isHome && site.description" class="header__desc">{{ site.description }}</p>
-  </header>
+  <n-config-provider :theme="darkTheme" :theme-overrides="naiveThemeOverrides">
+    <n-dialog-provider>
+      <n-notification-provider>
+        <n-message-provider>
+          <n-layout class="app-layout" embedded>
+            <n-layout-header bordered class="header">
+              <div class="header__inner">
+                <h1 class="header__title">
+                  <router-link to="/" class="header__title-link">{{ site.title }}</router-link>
+                </h1>
+                <n-space v-if="showHeaderNav" size="small" aria-label="主导航">
+                  <router-link to="/" class="header__nav-link">
+                    <n-button size="small" :type="isHome ? 'primary' : 'default'" quaternary>
+                      工具
+                    </n-button>
+                  </router-link>
+                  <router-link v-if="showPromptsLink" to="/prompts" class="header__nav-link">
+                    <n-button size="small" :type="isPrompts ? 'primary' : 'default'" quaternary>
+                      提示词
+                    </n-button>
+                  </router-link>
+                  <router-link v-if="showSqlLink" to="/sql" class="header__nav-link">
+                    <n-button size="small" :type="isSql ? 'primary' : 'default'" quaternary>
+                      {{ sqlNavLabel }}
+                    </n-button>
+                  </router-link>
+                </n-space>
+              </div>
+              <n-text v-if="isHome && site.description" depth="3" class="header__desc">
+                {{ site.description }}
+              </n-text>
+            </n-layout-header>
 
-  <main class="main">
-    <RouterView v-slot="{ Component }">
-      <component :is="Component" />
-    </RouterView>
-  </main>
+            <n-layout-content class="main">
+              <RouterView v-slot="{ Component }">
+                <component :is="Component" />
+              </RouterView>
+            </n-layout-content>
 
-  <footer class="footer">
-    <p>编辑 <code>src/config/nav.config.js</code>、<code>src/config/prompt.config.js</code> 快速配置</p>
-    <p class="footer__links">
-      <a href="./site-privacy.html" target="_blank" rel="noopener">隐私协议</a>
-      <span class="footer__sep" aria-hidden="true">·</span>
-      <a href="./terms.html" target="_blank" rel="noopener">服务条款</a>
-    </p>
-  </footer>
+            <n-layout-footer bordered class="footer">
+              <p>编辑 <code>src/config/nav.config.js</code>、<code>src/config/prompt.config.js</code> 快速配置</p>
+              <p class="footer__links">
+                <a href="./site-privacy.html" target="_blank" rel="noopener">隐私协议</a>
+                <span class="footer__sep" aria-hidden="true">·</span>
+                <a href="./terms.html" target="_blank" rel="noopener">服务条款</a>
+              </p>
+            </n-layout-footer>
+          </n-layout>
+        </n-message-provider>
+      </n-notification-provider>
+    </n-dialog-provider>
+  </n-config-provider>
 </template>
 
 <style scoped>
+.app-layout {
+  background: transparent;
+}
+
 .header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
+  background: transparent;
+  padding: 0.75rem 0 1rem;
   animation: fadeIn 0.4s var(--transition-slow) both;
 }
 
@@ -107,20 +132,7 @@ const sqlNavLabel = computed(() => sqlConfig?.navLabel || 'SQL 模板')
 }
 
 .header__nav-link {
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  border-radius: var(--radius);
-  transition: color var(--transition), background var(--transition);
-}
-.header__nav-link:hover {
-  color: var(--text);
-  background: var(--hover-overlay);
-}
-.header__nav-link--active {
-  color: var(--accent);
-  background: var(--hover-overlay);
+  text-decoration: none;
 }
 
 .header__desc {
@@ -134,12 +146,13 @@ const sqlNavLabel = computed(() => sqlConfig?.navLabel || 'SQL 模板')
 
 .main {
   min-height: 40vh;
+  padding-top: 0.5rem;
 }
 
 .footer {
-  margin-top: 3rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border-subtle);
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  background: transparent;
   font-size: 0.85rem;
   color: var(--text-muted);
 }

@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { NButton, NEmpty, NInput, NSpin, NSpace } from 'naive-ui'
 import { usePrompts } from '../../../composables/usePrompts.js'
 import PromptCard from './PromptCard.vue'
 
@@ -19,53 +20,55 @@ const show = computed(() => Boolean(config?.enabled))
 
     <div class="prompt-section__toolbar">
       <div class="prompt-section__search">
-        <input
+        <n-input
           v-model="searchQuery"
           type="search"
           class="prompt-section__input"
           placeholder="搜索提示词…"
-          inputmode="search"
-          autocomplete="off"
           aria-label="搜索提示词"
-        />
-        <svg class="prompt-section__search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.35-4.35" />
-        </svg>
+          clearable
+        >
+          <template #prefix>🔎</template>
+        </n-input>
       </div>
-      <div class="prompt-section__filters" role="tablist" aria-label="标签筛选">
-        <button
-          type="button"
+      <n-space class="prompt-section__filters" role="tablist" aria-label="标签筛选" :wrap="true" :size="[8, 8]">
+        <n-button
           role="tab"
           class="prompt-section__tab"
-          :class="{ 'prompt-section__tab--active': !activeTag }"
+          size="small"
+          quaternary
+          :type="!activeTag ? 'primary' : 'default'"
           :aria-selected="!activeTag"
           aria-label="全部"
           @click="setActiveTag('')"
         >
           全部
-        </button>
-        <button
+        </n-button>
+        <n-button
           v-for="tag in allTags"
           :key="tag"
-          type="button"
           role="tab"
           class="prompt-section__tab"
-          :class="{ 'prompt-section__tab--active': activeTag === tag }"
+          size="small"
+          quaternary
+          :type="activeTag === tag ? 'primary' : 'default'"
           :aria-selected="activeTag === tag"
           :aria-label="tag"
           @click="setActiveTag(tag)"
         >
           {{ tag }}
-        </button>
-      </div>
+        </n-button>
+      </n-space>
     </div>
 
-    <div v-if="loading" class="prompt-section__loading">加载中…</div>
+    <div v-if="loading" class="prompt-section__loading">
+      <n-spin size="small" />
+    </div>
 
     <div v-else-if="filteredPrompts.length === 0" class="prompt-section__empty">
-      <p class="prompt-section__empty-text">暂无匹配的提示词</p>
-      <p class="prompt-section__empty-hint">试试其他关键词或切换分类</p>
+      <n-empty description="暂无匹配的提示词">
+        <template #extra>试试其他关键词或切换分类</template>
+      </n-empty>
     </div>
 
     <div v-else class="prompt-section__grid">
@@ -111,67 +114,16 @@ const show = computed(() => Boolean(config?.enabled))
 
 .prompt-section__search {
   position: relative;
-  max-width: 320px;
-}
-
-.prompt-section__input {
-  width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.5rem;
-  font-size: 0.95rem;
-  color: var(--text);
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  transition: border-color var(--transition);
-}
-.prompt-section__input::placeholder {
-  color: var(--text-muted);
-}
-.prompt-section__input:focus {
-  border-color: var(--accent);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
-}
-
-.prompt-section__search-icon {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 1.1rem;
-  height: 1.1rem;
-  color: var(--text-muted);
-  pointer-events: none;
+  max-width: 360px;
 }
 
 .prompt-section__filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  overflow-x: auto;
-  padding-bottom: 0.25rem;
-  -webkit-overflow-scrolling: touch;
+  align-items: center;
 }
 
 .prompt-section__tab {
   flex-shrink: 0;
-  padding: 0.5rem 1rem;
-  min-height: 44px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 9999px;
-  transition: border-color var(--transition), color var(--transition);
-}
-.prompt-section__tab:hover {
-  color: var(--text);
-  border-color: var(--text-muted);
-}
-.prompt-section__tab--active {
-  color: var(--accent);
-  border-color: var(--accent);
+  border-radius: 999px;
 }
 
 .prompt-section__loading,
@@ -180,19 +132,25 @@ const show = computed(() => Boolean(config?.enabled))
   text-align: center;
   color: var(--text-muted);
 }
-.prompt-section__empty-text {
-  font-size: 1rem;
-  margin-bottom: 0.25rem;
-}
-.prompt-section__empty-hint {
-  font-size: 0.9rem;
-  opacity: 0.8;
-}
 
 .prompt-section__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1rem;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .prompt-section__toolbar {
+    gap: 0.6rem;
+  }
+
+  .prompt-section__search {
+    max-width: 100%;
+  }
+
+  .prompt-section__grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @keyframes fadeIn {

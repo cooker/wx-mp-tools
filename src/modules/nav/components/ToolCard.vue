@@ -1,4 +1,6 @@
 <script setup>
+import { NButton, NCard } from 'naive-ui'
+
 defineProps({
   name: { type: String, required: true },
   url: { type: String, required: true },
@@ -13,7 +15,7 @@ defineEmits(['toggle-favorite'])
 </script>
 
 <template>
-  <div class="tool-card">
+  <n-card class="tool-card" size="small" embedded>
     <span
       v-if="usingFallback && !internal"
       class="tool-card__fallback-badge"
@@ -22,10 +24,10 @@ defineEmits(['toggle-favorite'])
     >
       备用
     </span>
-    <button
+    <n-button
       v-if="!internal"
-      type="button"
       class="tool-card__star"
+      text
       :aria-label="favorited ? '取消收藏' : '收藏'"
       @click.stop="$emit('toggle-favorite')"
     >
@@ -35,7 +37,7 @@ defineEmits(['toggle-favorite'])
       <svg v-else class="tool-card__star-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
       </svg>
-    </button>
+    </n-button>
     <component
       :is="internal ? 'router-link' : 'a'"
       :to="internal ? url : undefined"
@@ -51,15 +53,12 @@ defineEmits(['toggle-favorite'])
       </div>
       <span class="tool-card__arrow" aria-hidden="true">→</span>
     </component>
-  </div>
+  </n-card>
 </template>
 
 <style scoped>
 .tool-card {
   position: relative;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
   transition: border-color var(--transition), background var(--transition);
 }
 
@@ -77,7 +76,6 @@ defineEmits(['toggle-favorite'])
   border: 1px solid #ffd27a;
 }
 .tool-card:hover {
-  border-color: var(--accent);
   background: var(--bg-elevated);
 }
 

@@ -61,17 +61,58 @@ export function usePrompts() {
   const activeTag = ref('')
   const searchDebounced = ref('')
 
+  function normalizeSearchText(value) {
+    return String(value ?? '').trim().toLowerCase()
+  }
+
+  function compactSearchText(value) {
+    return normalizeSearchText(value).replace(/\s+/g, '')
+  }
+
+  function isSubsequenceMatch(text, query) {
+    if (!query) return true
+    let qi = 0
+    for (let ti = 0; ti < text.length && qi < query.length; ti += 1) {
+      if (text[ti] === query[qi]) qi += 1
+    }
+    return qi === query.length
+  }
+
+  function collectSearchableTexts(value, bucket) {
+    if (value == null) return
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      bucket.push(String(value))
+      return
+    }
+    if (Array.isArray(value)) {
+      value.forEach((item) => collectSearchableTexts(item, bucket))
+      return
+    }
+    if (typeof value === 'object') {
+      Object.values(value).forEach((item) => collectSearchableTexts(item, bucket))
+    }
+  }
+
+  function getPromptSearchText(prompt) {
+    const parts = []
+    collectSearchableTexts(prompt, parts)
+    return normalizeSearchText(parts.join(' '))
+  }
+
   let debounceTimer = null
   watch(searchQuery, (v) => {
     clearTimeout(debounceTimer)
     debounceTimer = setTimeout(() => {
-      searchDebounced.value = v.trim().toLowerCase()
+      searchDebounced.value = normalizeSearchText(v)
     }, 300)
   }, { immediate: true })
 
   const allTags = computed(() => {
+    const base = searchDebounced.value
+      ? prompts.value.filter((p) => matchPrompt(p, searchDebounced.value))
+      : prompts.value
     const set = new Set()
-    prompts.value.forEach((p) => {
+    base.forEach((p) => {
       (p.tags || []).forEach((t) => set.add(t))
     })
     return Array.from(set).sort()
@@ -79,10 +120,14 @@ export function usePrompts() {
 
   function matchPrompt(p, q) {
     if (!q) return true
-    const title = (p.title || '').toLowerCase()
-    const content = (p.content || '').toLowerCase()
-    const tags = (p.tags || []).join(' ').toLowerCase()
-    return title.includes(q) || content.includes(q) || tags.includes(q)
+    const fullText = getPromptSearchText(p)
+    const compactText = compactSearchText(fullText)
+    const compactQuery = compactSearchText(q)
+    return (
+      fullText.includes(q) ||
+      compactText.includes(compactQuery) ||
+      isSubsequenceMatch(compactText, compactQuery)
+    )
   }
 
   const filteredPrompts = computed(() => {

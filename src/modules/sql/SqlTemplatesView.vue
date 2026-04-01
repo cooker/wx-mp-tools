@@ -1,11 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { EditorView, basicSetup } from 'codemirror'
-import { EditorState } from '@codemirror/state'
-import { sql } from '@codemirror/lang-sql'
-import { oneDark } from '@codemirror/theme-one-dark'
-import { format } from 'sql-formatter'
+import { NAlert, NButton, NEmpty, NInput, NSpin, NTag, NSpace, NCard } from 'naive-ui'
 import { useSqlTemplates } from '../../composables/useSqlTemplates.js'
 import { SQL_SECTION_ORDER } from '../../utils/parseSqlTemplateMd.js'
 import { renderDevMarkdownHtml } from '../../utils/renderDevMarkdown.js'
@@ -23,6 +19,97 @@ const editorHost = ref(null)
 let editorView = null
 /** DDL 多分块时每块一个 EditorView */
 const ddlEditors = new Map()
+const cmDeps = ref(null)
+const sqlFormatter = ref(null)
+const heavyDepsLoading = ref(false)
+const searchQuery = ref('')
+const searchDebounced = ref('')
+let searchTimer = null
+
+function normalizeSearchText(value) {
+  return String(value ?? '').trim().toLowerCase()
+}
+
+function compactSearchText(value) {
+  return normalizeSearchText(value).replace(/\s+/g, '')
+}
+
+function isSubsequenceMatch(text, query) {
+  if (!query) return true
+  let qi = 0
+  for (let ti = 0; ti < text.length && qi < query.length; ti += 1) {
+    if (text[ti] === query[qi]) qi += 1
+  }
+  return qi === query.length
+}
+
+function collectSearchableTexts(value, bucket) {
+  if (value == null) return
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    bucket.push(String(value))
+    return
+  }
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectSearchableTexts(item, bucket))
+    return
+  }
+  if (typeof value === 'object') {
+    Object.values(value).forEach((item) => collectSearchableTexts(item, bucket))
+  }
+}
+
+function getTemplateSearchText(t) {
+  const parts = []
+  collectSearchableTexts({ id: t.id, meta: t.meta, sections: t.sections }, parts)
+  return normalizeSearchText(parts.join(' '))
+}
+
+function matchTemplate(t, query) {
+  if (!query) return true
+  const fullText = getTemplateSearchText(t)
+  const compactText = compactSearchText(fullText)
+  const compactQuery = compactSearchText(query)
+  return (
+    fullText.includes(query) ||
+    compactText.includes(compactQuery) ||
+    isSubsequenceMatch(compactText, compactQuery)
+  )
+}
+
+async function ensureCodeMirrorDeps() {
+  if (cmDeps.value) return cmDeps.value
+  heavyDepsLoading.value = true
+  try {
+    const [codemirrorMod, stateMod, sqlMod, oneDarkMod] = await Promise.all([
+      import('codemirror'),
+      import('@codemirror/state'),
+      import('@codemirror/lang-sql'),
+      import('@codemirror/theme-one-dark'),
+    ])
+    cmDeps.value = {
+      EditorView: codemirrorMod.EditorView,
+      basicSetup: codemirrorMod.basicSetup,
+      EditorState: stateMod.EditorState,
+      sql: sqlMod.sql,
+      oneDark: oneDarkMod.oneDark,
+    }
+    return cmDeps.value
+  } finally {
+    heavyDepsLoading.value = false
+  }
+}
+
+async function ensureSqlFormatter() {
+  if (sqlFormatter.value) return sqlFormatter.value
+  heavyDepsLoading.value = true
+  try {
+    const mod = await import('sql-formatter')
+    sqlFormatter.value = mod.format
+    return sqlFormatter.value
+  } finally {
+    heavyDepsLoading.value = false
+  }
+}
 
 watch(
   templates,
@@ -35,8 +122,33 @@ watch(
   { immediate: true }
 )
 
+watch(searchQuery, (v) => {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    searchDebounced.value = normalizeSearchText(v)
+  }, 250)
+}, { immediate: true })
+
+const filteredTemplates = computed(() =>
+  templates.value.filter((t) => matchTemplate(t, searchDebounced.value))
+)
+
+watch(
+  filteredTemplates,
+  (list) => {
+    if (!list.length) {
+      selectedId.value = ''
+      return
+    }
+    if (!selectedId.value || !list.some((t) => t.id === selectedId.value)) {
+      selectedId.value = list[0].id
+    }
+  },
+  { immediate: true }
+)
+
 const selectedTemplate = computed(() =>
-  templates.value.find((t) => t.id === selectedId.value)
+  filteredTemplates.value.find((t) => t.id === selectedId.value)
 )
 
 watch(
@@ -72,15 +184,15 @@ const currentSql = computed(() => {
 const isDdlSection = computed(() => activeSection.value === 'DDL')
 const isDevSection = computed(() => activeSection.value === 'DEV')
 
-function sqlEditorExtensions(scrollerMax = 'min(55vh, 480px)') {
+function sqlEditorExtensions(deps) {
   return [
-    basicSetup,
-    sql(),
-    oneDark,
-    EditorView.theme({
+    deps.basicSetup,
+    deps.sql(),
+    deps.oneDark,
+    deps.EditorView.theme({
       '&': { fontSize: '13px' },
       '.cm-editor': { borderRadius: 'var(--radius)' },
-      '.cm-scroller': { minHeight: '240px', maxHeight: scrollerMax },
+      '.cm-scroller': { minHeight: '240px' },
     }),
   ]
 }
@@ -117,7 +229,7 @@ function scrollToDdlFragment(index) {
   el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-function bindDdlEditorHost(el, index) {
+async function bindDdlEditorHost(el, index) {
   if (!el) {
     const v = ddlEditors.get(index)
     if (v) {
@@ -126,6 +238,7 @@ function bindDdlEditorHost(el, index) {
     }
     return
   }
+  const deps = await ensureCodeMirrorDeps()
   const blocks = currentBlocks.value
   const sqlText = blocks[index]?.sql ?? ''
   if (ddlEditors.has(index)) {
@@ -143,21 +256,22 @@ function bindDdlEditorHost(el, index) {
       return
     }
   }
-  const view = new EditorView({
+  const view = new deps.EditorView({
     parent: el,
-    state: EditorState.create({
+    state: deps.EditorState.create({
       doc: sqlText,
-      extensions: sqlEditorExtensions('min(40vh, 400px)'),
+      extensions: sqlEditorExtensions(deps),
     }),
   })
   ddlEditors.set(index, view)
 }
 
-function formatDdlFragment(index) {
+async function formatDdlFragment(index) {
   const v = ddlEditors.get(index)
   if (!v) return
   const raw = v.state.doc.toString()
   try {
+    const format = await ensureSqlFormatter()
     const out = format(raw, { language: 'mysql' })
     v.dispatch({
       changes: { from: 0, to: v.state.doc.length, insert: out },
@@ -186,13 +300,14 @@ async function copyDevRaw(index) {
   }
 }
 
-function createEditor() {
+async function createEditor() {
   if (!editorHost.value || editorView) return
-  editorView = new EditorView({
+  const deps = await ensureCodeMirrorDeps()
+  editorView = new deps.EditorView({
     parent: editorHost.value,
-    state: EditorState.create({
+    state: deps.EditorState.create({
       doc: currentSql.value || '',
-      extensions: sqlEditorExtensions(),
+      extensions: sqlEditorExtensions(deps),
     }),
   })
 }
@@ -229,6 +344,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  clearTimeout(searchTimer)
   destroyEditor()
   destroyAllDdlEditors()
 })
@@ -253,14 +369,14 @@ watch(selectedId, () => {
 function onFormat() {
   if (!editorView) return
   const raw = editorView.state.doc.toString()
-  try {
+  ensureSqlFormatter().then((format) => {
     const out = format(raw, { language: 'mysql' })
     editorView.dispatch({
       changes: { from: 0, to: editorView.state.doc.length, insert: out },
     })
-  } catch {
+  }).catch(() => {
     /* ignore */
-  }
+  })
 }
 
 async function onCopy() {
@@ -282,41 +398,65 @@ const metaMissing = computed(() => {
 
 <template>
   <div class="sql-view">
-    <a href="#/" class="sql-view__back" @click.prevent="router.push('/')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <path d="M19 12H5M12 19l-7-7 7-7" />
-      </svg>
-      <span>返回工具导航</span>
-    </a>
+    <n-button quaternary class="sql-view__back" @click="router.push('/')">
+      ← 返回工具导航
+    </n-button>
 
     <h1 class="sql-view__title">SQL 模板</h1>
     <p class="sql-view__hint">模板来自 <code>public/sql-templates/</code>，约定见仓库根目录 <code>SQL.md</code>。</p>
 
-    <div v-if="loading" class="sql-view__state">加载中…</div>
-    <div v-else-if="error" class="sql-view__state sql-view__state--err">{{ error }}</div>
-    <div v-else-if="!templates.length" class="sql-view__state">暂无模板，请在 <code>public/sql-templates/</code> 添加 <code>.md</code> 并更新清单。</div>
+    <div v-if="loading" class="sql-view__state">
+      <n-spin size="small" />
+    </div>
+    <div v-else-if="error" class="sql-view__state">
+      <n-alert type="error" :show-icon="false">{{ error }}</n-alert>
+    </div>
+    <div v-else-if="!templates.length" class="sql-view__state">
+      <n-empty description="暂无模板">
+        <template #extra>请在 <code>public/sql-templates/</code> 添加 <code>.md</code> 并更新清单。</template>
+      </n-empty>
+    </div>
 
     <div v-else class="sql-layout">
       <aside class="sql-layout__side" aria-label="模板列表">
-        <h2 class="sql-layout__side-title">模板</h2>
-        <ul class="sql-layout__list">
-          <li v-for="t in templates" :key="t.id">
-            <button
-              type="button"
-              class="sql-layout__item"
-              :class="{ 'sql-layout__item--active': t.id === selectedId }"
-              @click="selectedId = t.id"
-            >
-              {{ t.meta.name || t.id }}
-            </button>
-          </li>
-        </ul>
+        <n-card embedded size="small">
+          <h2 class="sql-layout__side-title">模板</h2>
+          <n-input
+            v-model="searchQuery"
+            type="search"
+            class="sql-layout__search"
+            placeholder="搜索模板（全文）"
+            clearable
+          >
+            <template #prefix>🔎</template>
+          </n-input>
+          <p v-if="!filteredTemplates.length" class="sql-layout__empty-tip">无匹配模板</p>
+          <ul class="sql-layout__list">
+            <li v-for="t in filteredTemplates" :key="t.id">
+              <n-button
+                size="small"
+                quaternary
+                class="sql-layout__item"
+                :type="t.id === selectedId ? 'primary' : 'default'"
+                @click="selectedId = t.id"
+              >
+                {{ t.meta.name || t.id }}
+              </n-button>
+            </li>
+          </ul>
+        </n-card>
       </aside>
 
       <div v-if="selectedTemplate" class="sql-layout__main">
-        <div v-if="metaMissing.length" class="sql-view__warn">
+        <n-alert v-if="heavyDepsLoading" type="info" class="sql-view__warmup-hint" :show-icon="false">
+          <n-space size="small" align="center">
+            <n-spin size="small" />
+            <span>SQL 编辑器依赖加载中，请稍候…</span>
+          </n-space>
+        </n-alert>
+        <n-alert v-if="metaMissing.length" type="warning" class="sql-view__warn">
           缺少 front matter 字段：{{ metaMissing.join('、') }}（见 SQL.md）
-        </div>
+        </n-alert>
 
         <dl class="sql-meta">
           <div v-if="selectedTemplate.meta.code" class="sql-meta__row">
@@ -338,33 +478,35 @@ const metaMissing = computed(() => {
         </dl>
 
         <div class="sql-tabs" role="tablist" :aria-label="`SQL 分节：${selectedTemplate.meta.name || selectedTemplate.id}`">
-          <button
+          <n-button
             v-for="key in sectionOrder"
             :key="key"
-            type="button"
             role="tab"
             class="sql-tabs__tab"
-            :class="{ 'sql-tabs__tab--active': key === activeSection }"
+            size="tiny"
+            quaternary
+            :type="key === activeSection ? 'primary' : 'default'"
             :disabled="!selectedTemplate.sectionKeys.includes(key)"
             :aria-selected="key === activeSection"
             @click="activeSection = key"
           >
             {{ key }}
-          </button>
+          </n-button>
         </div>
 
         <div v-if="activeSection === 'DDL' && currentBlocks.length" class="sql-blocks sql-blocks--ddl">
           <p class="sql-blocks__anchor-hint">点击下方标签可滚动到对应片段</p>
           <div class="sql-blocks__list" role="list">
-            <button
+            <n-button
               v-for="(b, i) in currentBlocks"
               :key="i"
-              type="button"
               class="sql-blocks__chip sql-blocks__chip--anchor"
+              size="tiny"
+              quaternary
               @click="scrollToDdlFragment(i)"
             >
               {{ b.title || `片段 ${i + 1}` }}
-            </button>
+            </n-button>
           </div>
           <div class="sql-ddl__stack">
             <article
@@ -376,8 +518,10 @@ const metaMissing = computed(() => {
               <h3 class="sql-ddl__fragment-title">{{ b.title || `片段 ${i + 1}` }}</h3>
               <p v-if="b.note" class="sql-blocks__note">{{ b.note }}</p>
               <div class="sql-editor-toolbar">
-                <button type="button" class="sql-btn" @click="formatDdlFragment(i)">格式化</button>
-                <button type="button" class="sql-btn" @click="copyDdlFragment(i)">复制</button>
+                <n-space size="small">
+                  <n-button size="tiny" @click="formatDdlFragment(i)">格式化</n-button>
+                  <n-button size="tiny" @click="copyDdlFragment(i)">复制</n-button>
+                </n-space>
               </div>
               <div
                 class="sql-editor-host"
@@ -390,15 +534,16 @@ const metaMissing = computed(() => {
         <div v-else-if="activeSection === 'DEV' && currentBlocks.length" class="sql-blocks sql-blocks--dev">
           <p class="sql-blocks__anchor-hint">点击下方标签可锚点跳转；正文由注释内容渲染为 Markdown，便于阅读</p>
           <div class="sql-blocks__list" role="list">
-            <button
+            <n-button
               v-for="(b, i) in currentBlocks"
               :key="i"
-              type="button"
               class="sql-blocks__chip sql-blocks__chip--anchor"
+              size="tiny"
+              quaternary
               @click="scrollToDevFragment(i)"
             >
               {{ b.title || `片段 ${i + 1}` }}
-            </button>
+            </n-button>
           </div>
           <div class="sql-dev__stack">
             <article
@@ -410,7 +555,7 @@ const metaMissing = computed(() => {
               <h3 class="sql-ddl__fragment-title">{{ b.title || `片段 ${i + 1}` }}</h3>
               <p v-if="b.note" class="sql-blocks__note">{{ b.note }}</p>
               <div class="sql-editor-toolbar">
-                <button type="button" class="sql-btn" @click="copyDevRaw(i)">复制源码</button>
+                <n-button size="tiny" @click="copyDevRaw(i)">复制源码</n-button>
               </div>
               <div
                 class="sql-dev-md"
@@ -422,23 +567,26 @@ const metaMissing = computed(() => {
 
         <div v-else-if="activeSection && currentBlocks.length" class="sql-blocks">
           <div class="sql-blocks__list" role="list">
-            <button
+            <n-button
               v-for="(b, i) in currentBlocks"
               :key="i"
-              type="button"
               class="sql-blocks__chip"
-              :class="{ 'sql-blocks__chip--active': i === blockIndex }"
+              size="tiny"
+              quaternary
+              :type="i === blockIndex ? 'primary' : 'default'"
               @click="blockIndex = i"
             >
               {{ b.title || `片段 ${i + 1}` }}
-            </button>
+            </n-button>
           </div>
           <p v-if="currentBlocks[blockIndex]?.note" class="sql-blocks__note">
             {{ currentBlocks[blockIndex].note }}
           </p>
           <div class="sql-editor-toolbar">
-            <button type="button" class="sql-btn" @click="onFormat">格式化</button>
-            <button type="button" class="sql-btn" @click="onCopy">复制</button>
+            <n-space size="small">
+              <n-button size="tiny" @click="onFormat">格式化</n-button>
+              <n-button size="tiny" @click="onCopy">复制</n-button>
+            </n-space>
           </div>
           <div ref="editorHost" class="sql-editor-host" />
         </div>
@@ -505,6 +653,10 @@ const metaMissing = computed(() => {
   margin-bottom: 1rem;
 }
 
+.sql-view__warmup-hint {
+  margin-bottom: 0.75rem;
+}
+
 .sql-layout {
   display: grid;
   grid-template-columns: 220px 1fr;
@@ -528,6 +680,16 @@ const metaMissing = computed(() => {
   letter-spacing: 0.06em;
   color: var(--text-muted);
   margin: 0 0 0.75rem;
+}
+
+.sql-layout__search {
+  margin-bottom: 0.65rem;
+}
+
+.sql-layout__empty-tip {
+  margin: 0.25rem 0 0.6rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
 }
 
 .sql-layout__list {
@@ -668,8 +830,8 @@ const metaMissing = computed(() => {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1rem 1.15rem;
-  max-height: min(70vh, 720px);
-  overflow: auto;
+  max-height: none;
+  overflow: visible;
 }
 
 .sql-dev-md :deep(h1) {

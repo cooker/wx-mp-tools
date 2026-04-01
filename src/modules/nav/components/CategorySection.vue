@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { NCard } from 'naive-ui'
 import ToolCard from './ToolCard.vue'
 
 const props = defineProps({
@@ -28,33 +29,31 @@ const gridClass = computed(() => {
     :aria-labelledby="sectionId"
     :style="{ animationDelay: `${0.1 + index * 0.06}s` }"
   >
-    <h2 :id="sectionId" class="category__title">
-      <span v-if="icon" class="category__icon" aria-hidden="true">{{ icon }}</span>
-      {{ name }}
-    </h2>
-    <div class="category__grid">
-      <ToolCard
-        v-for="(item, i) in items"
-        :key="item.urlKey || item.url || item.name || i"
-        :name="item.name"
-        :url="item.url"
-        :desc="item.desc"
-        :icon="item.icon"
-        :using-fallback="!!item.usingFallback"
-        :favorited="!item.internal && isFavorited(item.urlKey || item.url, item.url)"
-        :internal="!!item.internal"
-        @toggle-favorite="emit('toggle-favorite', { key: item.urlKey || item.url, url: item.url })"
-      />
-    </div>
+    <n-card embedded size="small">
+      <h2 :id="sectionId" class="category__title">
+        <span v-if="icon" class="category__icon" aria-hidden="true">{{ icon }}</span>
+        {{ name }}
+      </h2>
+      <div class="category__grid">
+        <ToolCard
+          v-for="(item, i) in items"
+          :key="item.urlKey || item.url || item.name || i"
+          :name="item.name"
+          :url="item.url"
+          :desc="item.desc"
+          :icon="item.icon"
+          :using-fallback="!!item.usingFallback"
+          :favorited="!item.internal && isFavorited(item.urlKey || item.url, item.url)"
+          :internal="!!item.internal"
+          @toggle-favorite="emit('toggle-favorite', { key: item.urlKey || item.url, url: item.url })"
+        />
+      </div>
+    </n-card>
   </section>
 </template>
 
 <style scoped>
 .category {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 1.25rem;
   animation: categoryFadeIn 0.4s var(--transition-slow) both;
 }
 

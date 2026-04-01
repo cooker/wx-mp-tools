@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { NCard, NTag } from 'naive-ui'
 import { formatDate } from '../../utils/formatDate.js'
 
 const props = defineProps({
@@ -10,7 +11,7 @@ const show = computed(() => Boolean(props.config?.enabled && props.config?.items
 </script>
 
 <template>
-  <aside v-if="show" class="notice-board" aria-label="公告">
+  <n-card v-if="show" class="notice-board" aria-label="公告" embedded size="small">
     <h2 class="notice-board__title">
       <svg class="notice-board__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="m3 11 18-5v12L3 14v-3z" />
@@ -34,9 +35,11 @@ const show = computed(() => Boolean(props.config?.enabled && props.config?.items
         >
           <div class="notice-board__header">
             <h3 class="notice-board__notice-title">{{ notice.title }}</h3>
-            <time v-if="notice.date" class="notice-board__date" :datetime="notice.date">
-              {{ formatDate(notice.date) }}
-            </time>
+            <n-tag v-if="notice.date" size="small" :bordered="false" type="default">
+              <time class="notice-board__date" :datetime="notice.date">
+                {{ formatDate(notice.date) }}
+              </time>
+            </n-tag>
           </div>
           <p v-if="notice.content" class="notice-board__content">
             {{ notice.content }}
@@ -44,15 +47,11 @@ const show = computed(() => Boolean(props.config?.enabled && props.config?.items
         </component>
       </li>
     </ul>
-  </aside>
+  </n-card>
 </template>
 
 <style scoped>
 .notice-board {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 1.25rem;
   position: sticky;
   top: 2rem;
   max-height: calc(100vh - 4rem);
@@ -135,7 +134,7 @@ const show = computed(() => Boolean(props.config?.enabled && props.config?.items
 .notice-board__date {
   font-size: 0.75rem;
   color: var(--text-muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-mono, monospace);
   white-space: nowrap;
   flex-shrink: 0;
 }

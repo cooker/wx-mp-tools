@@ -7,7 +7,7 @@
  * - categories: 分类列表，每个分类包含 name、icon(可选)、items
  * - items: 链接列表，每项包含 name、url、desc(可选)、icon(可选)、internal(可选，站内链接)
  *   - url 支持 string 或 string[]（外链数组时首页会异步探测可用地址并自动选择）
- * - urlResolver: 链接探测配置（可选），如 timeoutMs、cacheTtlMs
+ * - performance: 性能策略配置（可选），统一管理链接探测和路由预热
  * - ad: 底部广告位，支持多个广告轮播，每项可选 image / html / link
  * - notices: 右侧公告列表，支持点击跳转
  * - rewardCode: 赞赏码（微信/支付宝收款码图片）
@@ -15,9 +15,29 @@
  */
 
 export const navConfig = {
-  urlResolver: {
-    timeoutMs: 2500,
-    cacheTtlMs: 6 * 60 * 60 * 1000,
+  /**
+   * 性能策略（推荐）
+   * - 方案A（默认/移动网络）：balanced
+   *   - urlResolver.timeoutMs = 2500
+   *   - routeWarmup.enabled = true
+   * - 方案B（弱网/内网）：conservative
+   *   - urlResolver.timeoutMs = 1500
+   *   - routeWarmup.enabled = false
+   * - 方案C（高性能网络）：aggressive
+   *   - urlResolver.timeoutMs = 3000
+   *   - routeWarmup.routes 可增加更多页面
+   */
+  performance: {
+    urlResolver: {
+      timeoutMs: 2500,
+      cacheTtlMs: 6 * 60 * 60 * 1000,
+    },
+    routeWarmup: {
+      enabled: true,
+      timeoutMs: 2000,
+      delayMs: 600,
+      routes: ['prompts', 'sql'],
+    },
   },
 
   site: {

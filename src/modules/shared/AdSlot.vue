@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { NButton, NCard, NSpace } from 'naive-ui'
 
 const props = defineProps({
   config: { type: Object, default: () => ({}) },
@@ -69,13 +70,11 @@ function getImagePosition(item) {
   return item?.image?.position || 'center'
 }
 
-const currentItem = computed(() => items.value[currentIndex.value] || null)
-const currentType = computed(() => (currentItem.value ? getItemType(currentItem.value) : null))
 const hasMultiple = computed(() => items.value.length > 1)
 </script>
 
 <template>
-  <aside v-if="show && items.length" class="ad-slot" aria-label="广告">
+  <n-card v-if="show && items.length" class="ad-slot" aria-label="广告" embedded size="small">
     <div class="ad-slot__wrap">
       <div
         v-for="(item, i) in items"
@@ -100,39 +99,45 @@ const hasMultiple = computed(() => items.value.length > 1)
               :style="{ objectFit: getImageFit(item), objectPosition: getImagePosition(item) }"
             />
           </a>
-          <a
+          <n-button
             v-else-if="getItemType(item) === 'link'"
+            class="ad-slot__link"
+            tag="a"
             :href="item.link.url"
             target="_blank"
             rel="noopener noreferrer sponsored"
-            class="ad-slot__link"
+            quaternary
           >
             {{ item.link.text }}
-          </a>
+          </n-button>
         </div>
       </div>
     </div>
-    <div v-if="hasMultiple" class="ad-slot__dots" role="tablist" aria-label="广告轮播">
-      <button
+    <n-space v-if="hasMultiple" class="ad-slot__dots" role="tablist" aria-label="广告轮播" justify="center" :size="8">
+      <n-button
         v-for="(_, i) in items"
         :key="i"
-        type="button"
         role="tab"
+        text
+        circle
         :aria-selected="i === currentIndex"
         :aria-label="`广告 ${i + 1}`"
         class="ad-slot__dot"
         :class="{ 'ad-slot__dot--active': i === currentIndex }"
         @click="goTo(i)"
       />
-    </div>
-  </aside>
+    </n-space>
+  </n-card>
 </template>
 
 <style scoped>
 .ad-slot {
   margin-top: 2rem;
-  padding: 1rem 0;
-  border-top: 1px solid var(--border-subtle);
+}
+
+.ad-slot :deep(.n-card__content) {
+  padding-top: 14px;
+  padding-bottom: 14px;
 }
 
 .ad-slot__wrap {
@@ -200,21 +205,7 @@ const hasMultiple = computed(() => items.value.length > 1)
 }
 
 .ad-slot__link {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.5rem 1rem;
-  min-height: 44px;
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  transition: border-color var(--transition), color var(--transition);
-}
-
-.ad-slot__link:hover {
-  color: var(--accent);
-  border-color: var(--accent);
+  min-height: 40px;
 }
 
 .ad-slot__dots {
@@ -227,16 +218,15 @@ const hasMultiple = computed(() => items.value.length > 1)
 .ad-slot__dot {
   width: 8px;
   height: 8px;
-  padding: 0;
-  border-radius: 50%;
-  background: var(--border);
-  transition: background var(--transition);
-}
-.ad-slot__dot:hover {
-  background: var(--text-muted);
+  min-width: 8px;
+  min-height: 8px;
+  padding: 0 !important;
+  border-radius: 999px;
+  background: var(--border-subtle) !important;
+  opacity: 1;
 }
 .ad-slot__dot--active {
-  background: var(--accent);
+  background: var(--accent) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

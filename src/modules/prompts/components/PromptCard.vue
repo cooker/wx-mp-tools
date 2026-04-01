@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import { NButton, NCard, NTag, NSpace } from 'naive-ui'
 
 const props = defineProps({
   title: { type: String, required: true },
@@ -24,10 +25,10 @@ async function copyToClipboard() {
 </script>
 
 <template>
-  <div class="prompt-card">
-    <button
-      type="button"
+  <n-card class="prompt-card" size="small" embedded>
+    <n-button
       class="prompt-card__copy"
+      text
       :aria-label="copied ? '已复制' : '复制提示词'"
       :disabled="!content"
       @click="copyToClipboard"
@@ -40,50 +41,29 @@ async function copyToClipboard() {
         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
       </svg>
       <span class="prompt-card__copy-text">{{ copied ? '已复制' : '复制' }}</span>
-    </button>
+    </n-button>
     <div class="prompt-card__body">
       <h3 class="prompt-card__title">{{ title }}</h3>
-      <div v-if="tags?.length" class="prompt-card__tags">
-        <span v-for="tag in tags" :key="tag" class="prompt-card__tag">{{ tag }}</span>
-      </div>
+      <n-space v-if="tags?.length" class="prompt-card__tags" size="small">
+        <n-tag v-for="tag in tags" :key="tag" size="small" round>{{ tag }}</n-tag>
+      </n-space>
       <p class="prompt-card__preview">{{ content }}</p>
     </div>
-  </div>
+  </n-card>
 </template>
 
 <style scoped>
 .prompt-card {
   position: relative;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 1rem 1.25rem;
+  padding: 1rem;
   transition: border-color var(--transition), background var(--transition);
-}
-.prompt-card:hover {
-  border-color: var(--accent);
-  background: var(--bg-elevated);
 }
 
 .prompt-card__copy {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
   min-width: 44px;
-  min-height: 44px;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  transition: color var(--transition), background var(--transition);
-  border-radius: var(--radius);
-}
-.prompt-card__copy:hover:not(:disabled) {
-  color: var(--accent);
-  background: var(--hover-overlay);
 }
 .prompt-card__copy:disabled {
   opacity: 0.5;
@@ -99,11 +79,11 @@ async function copyToClipboard() {
 }
 
 .prompt-card__body {
-  padding-right: 5rem;
+  padding-right: 4.5rem;
 }
 
 .prompt-card__title {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text);
   margin-bottom: 0.5rem;
@@ -111,20 +91,7 @@ async function copyToClipboard() {
 }
 
 .prompt-card__tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
   margin-bottom: 0.5rem;
-}
-
-.prompt-card__tag {
-  font-size: 0.75rem;
-  font-weight: 500;
-  padding: 0.2em 0.5em;
-  color: var(--text-muted);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid var(--border-subtle);
-  border-radius: 9999px;
 }
 
 .prompt-card__preview {
@@ -136,6 +103,12 @@ async function copyToClipboard() {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .prompt-card__body {
+    padding-right: 4rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

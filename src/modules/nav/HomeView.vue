@@ -1,7 +1,9 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
+import { NButton, NEmpty, NSpace } from 'naive-ui'
 import { navConfig } from '../../config/nav.config.js'
 import { sqlConfig } from '../../config/sql.config.js'
+import { preloadRouteComponents } from '../../router/index.js'
 import CategorySection from './components/CategorySection.vue'
 import SearchBar from './components/SearchBar.vue'
 import FilterTabs from './components/FilterTabs.vue'
@@ -13,31 +15,166 @@ import { useFavorites } from '../../composables/useFavorites.js'
 const { has: isFavorited, toggle: toggleFavorite } = useFavorites()
 
 const { site, categories, ad = {}, notices = {}, rewardCode = {}, groupCode = {} } = navConfig
+const perfConfig = navConfig?.performance || {}
+const legacyUrlResolver = navConfig?.urlResolver || {}
+const legacyRouteWarmup = navConfig?.routeWarmup || {}
+const urlResolverConfig = perfConfig.urlResolver || legacyUrlResolver
+const routeWarmupConfig = perfConfig.routeWarmup || legacyRouteWarmup
 const URL_RESOLVE_CACHE_KEY = 'tool-nav-url-resolve-cache-v1'
-const URL_RESOLVE_TTL_MS = Number(navConfig?.urlResolver?.cacheTtlMs) || 6 * 60 * 60 * 1000
-const URL_CHECK_TIMEOUT_MS = Number(navConfig?.urlResolver?.timeoutMs) || 2500
+const URL_RESOLVE_TTL_MS = Number(urlResolverConfig?.cacheTtlMs) || 6 * 60 * 60 * 1000
+const URL_CHECK_TIMEOUT_MS = Number(urlResolverConfig?.timeoutMs) || 2500
 const resolvedUrlMap = ref({})
 
 const searchQuery = ref('')
 const activeCategory = ref('')
 const showFavoritesOnly = ref(false)
 const searchExpanded = ref(true)
+const showMobileQr = ref(false)
 
 const searchDebounced = ref('')
 let debounceTimer = null
+function normalizeSearchText(value) {
+  return String(value ?? '').trim().toLowerCase()
+}
+
+function compactSearchText(value) {
+  return normalizeSearchText(value).replace(/\s+/g, '')
+}
+
+function collectSearchableTexts(value, bucket) {
+  if (value == null) return
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    bucket.push(String(value))
+    return
+  }
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectSearchableTexts(item, bucket))
+    return
+  }
+  if (typeof value === 'object') {
+    Object.values(value).forEach((item) => collectSearchableTexts(item, bucket))
+  }
+}
+
+function getItemSearchText(item, category) {
+  const parts = []
+  // 仅索引业务可读字段，避免 url/http 等噪音导致误命中
+  collectSearchableTexts(
+    {
+      name: item?.name,
+      description: item?.description,
+      desc: item?.desc,
+      summary: item?.summary,
+      tags: item?.tags,
+      keywords: item?.keywords,
+      keyword: item?.keyword,
+      aliases: item?.aliases,
+      alias: item?.alias,
+    },
+    parts
+  )
+  collectSearchableTexts(
+    {
+      categoryId: category?.id,
+      categoryName: category?.name,
+      categoryIcon: category?.icon,
+    },
+    parts
+  )
+  return normalizeSearchText(parts.join(' '))
+}
+
+function isSubsequenceMatch(text, query) {
+  if (!query) return true
+  let qi = 0
+  for (let ti = 0; ti < text.length && qi < query.length; ti += 1) {
+    if (text[ti] === query[qi]) qi += 1
+  }
+  return qi === query.length
+}
+
 watch(searchQuery, (v) => {
   clearTimeout(debounceTimer)
   debounceTimer = setTimeout(() => {
-    searchDebounced.value = v.trim().toLowerCase()
+    searchDebounced.value = normalizeSearchText(v)
   }, 300)
 }, { immediate: true })
 
-function matchItem(item, q) {
+const SEARCH_DEBUG = typeof import.meta !== 'undefined' && !!import.meta.env?.DEV
+
+function matchItem(item, q, category) {
   if (!q) return true
-  const name = (item.name || '').toLowerCase()
-  const desc = (item.desc || '').toLowerCase()
-  return name.includes(q) || desc.includes(q)
+  const fullText = getItemSearchText(item, category)
+  const compactFullText = compactSearchText(fullText)
+  const compactQuery = compactSearchText(q)
+  const allowSubsequence = compactQuery.length >= 3
+
+  // 全文检索 + 模糊匹配（连续子串 + 非连续顺序字符）
+  return (
+    fullText.includes(q) ||
+    compactFullText.includes(compactQuery) ||
+    (allowSubsequence && isSubsequenceMatch(compactFullText, compactQuery))
+  )
 }
+
+function getMatchReason(item, query, category) {
+  const fullText = getItemSearchText(item, category)
+  const compactText = compactSearchText(fullText)
+  const compactQuery = compactSearchText(query)
+  const allowSubsequence = compactQuery.length >= 3
+  const includes = fullText.includes(query)
+  const compactIncludes = compactText.includes(compactQuery)
+  const subsequence = allowSubsequence && isSubsequenceMatch(compactText, compactQuery)
+  return {
+    matched: includes || compactIncludes || subsequence,
+    includes,
+    compactIncludes,
+    subsequence,
+    fullText,
+  }
+}
+
+watch(searchDebounced, (query) => {
+  if (!SEARCH_DEBUG || !query) return
+  const stats = {
+    total: 0,
+    matched: 0,
+    byIncludes: 0,
+    byCompactIncludes: 0,
+    bySubsequence: 0,
+    withHttpInText: 0,
+  }
+  const sampleMatches = []
+  categories.forEach((category) => {
+    category.items.forEach((item) => {
+      stats.total += 1
+      const reason = getMatchReason(item, query, category)
+      if (!reason.matched) return
+      stats.matched += 1
+      if (reason.includes) stats.byIncludes += 1
+      if (reason.compactIncludes) stats.byCompactIncludes += 1
+      if (reason.subsequence) stats.bySubsequence += 1
+      if (reason.fullText.includes('http')) stats.withHttpInText += 1
+      if (sampleMatches.length < 8) {
+        sampleMatches.push({
+          name: item.name,
+          category: category.name,
+          includes: reason.includes,
+          compactIncludes: reason.compactIncludes,
+          subsequence: reason.subsequence,
+          textPreview: reason.fullText.slice(0, 160),
+        })
+      }
+    })
+  })
+  console.groupCollapsed(`[search-debug] query="${query}"`)
+  console.log('[search-debug] stats', stats)
+  console.log('[search-debug] sampleMatches', sampleMatches)
+  if (stats.matched > 0 && stats.withHttpInText === stats.matched) {
+    console.warn('[search-debug] 所有命中项均包含 URL 文本，可能导致搜索看起来“无筛选效果”')
+  }
+  console.groupEnd()
+})
 
 function getItemUrlCandidates(item) {
   if (Array.isArray(item.url)) return item.url.filter(Boolean)
@@ -166,6 +303,27 @@ onMounted(() => {
   })
   resolvedUrlMap.value = warmup
   resolveUrls()
+
+  // 空闲时预热次级路由，减少首次打开延迟（可配置关闭）
+  if (!routeWarmupConfig.enabled) return
+  const warmupRoutesList = Array.isArray(routeWarmupConfig.routes) && routeWarmupConfig.routes.length
+    ? routeWarmupConfig.routes
+    : ['prompts', 'sql']
+  const warmupTimeoutMs = Number(routeWarmupConfig.timeoutMs) || 2000
+  const warmupDelayMs = Number(routeWarmupConfig.delayMs) || 600
+  const warmupRoutes = () => {
+    preloadRouteComponents(warmupRoutesList)
+  }
+  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+    window.requestIdleCallback(warmupRoutes, { timeout: warmupTimeoutMs })
+  } else {
+    setTimeout(warmupRoutes, warmupDelayMs)
+  }
+})
+
+watch(showMobileQr, (open) => {
+  if (typeof document === 'undefined') return
+  document.body.style.overflow = open ? 'hidden' : ''
 })
 
 function decorateItem(item, categoryId) {
@@ -195,7 +353,7 @@ const filteredCategories = computed(() => {
       items: c.items.filter((item) => {
         const currentUrl = getItemResolvedUrl(item)
         if (currentUrl === '/sql' && !sqlConfig?.enabled) return false
-        if (!matchItem(item, q)) return false
+        if (!matchItem(item, q, c)) return false
         if (favOnly && !isItemFavorited(item)) return false
         return true
       }).map((item) => decorateItem(item, c.id)),
@@ -221,8 +379,13 @@ const favoriteItems = computed(() => {
   const q = searchDebounced.value
   return allItemsFlat.value.filter((item) => {
     if (!isItemFavorited(item)) return false
-    return matchItem(item, q)
+    return matchItem(item, q, categories.find((c) => c.id === item.categoryId))
   })
+})
+
+const visibleCategoriesForTabs = computed(() => {
+  const base = searchDebounced.value ? filteredCategories.value : categories
+  return base.map((c) => ({ id: c.id, name: c.name, icon: c.icon }))
 })
 </script>
 
@@ -230,35 +393,33 @@ const favoriteItems = computed(() => {
   <div class="toolbar">
     <div class="toolbar__row">
       <SearchBar v-model="searchQuery" v-model:expanded="searchExpanded" />
-      <button
-        type="button"
+      <n-button
         class="btn-favorites"
-        :class="{ 'btn-favorites--active': showFavoritesOnly }"
+        :type="showFavoritesOnly ? 'primary' : 'default'"
+        quaternary
         :aria-pressed="showFavoritesOnly"
         @click="showFavoritesOnly = !showFavoritesOnly"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-        </svg>
-        <span>我的收藏</span>
-      </button>
+        <span>⭐ 我的收藏</span>
+      </n-button>
     </div>
     <FilterTabs
       v-if="!showFavoritesOnly"
-      :categories="categories"
+      :categories="visibleCategoriesForTabs"
       :active="activeCategory"
       @update:active="activeCategory = $event"
     />
   </div>
 
   <div v-if="hasNoResults" class="empty-state">
-    <p class="empty-state__text">暂无结果</p>
-    <p class="empty-state__hint">试试其他关键词或切换分类</p>
+    <n-empty description="暂无结果">
+      <template #extra>试试其他关键词或切换分类</template>
+    </n-empty>
   </div>
 
   <template v-else>
     <div v-if="showFavoritesOnly" class="content content--flat">
-      <div class="card-grid">
+      <n-space vertical :size="16">
         <CategorySection
           v-if="favoriteItems.length > 0"
           id="favorites"
@@ -267,30 +428,55 @@ const favoriteItems = computed(() => {
           :is-favorited="(key, url) => isFavorited(key) || (!!url && isFavorited(url))"
           @toggle-favorite="({ key, url }) => toggleItemFavorite(key, url)"
         />
-      </div>
+      </n-space>
     </div>
 
     <div v-else class="layout">
       <main class="content">
-        <CategorySection
-          v-for="(cat, index) in filteredCategories"
-          :key="cat.id"
-          :id="cat.id"
-          :name="cat.name"
-          :icon="cat.icon"
-          :items="cat.items"
-          :index="index"
-          :is-favorited="(key, url) => isFavorited(key) || (!!url && isFavorited(url))"
-          @toggle-favorite="({ key, url }) => toggleItemFavorite(key, url)"
-        />
+        <n-space vertical :size="16">
+          <CategorySection
+            v-for="(cat, index) in filteredCategories"
+            :key="cat.id"
+            :id="cat.id"
+            :name="cat.name"
+            :icon="cat.icon"
+            :items="cat.items"
+            :index="index"
+            :is-favorited="(key, url) => isFavorited(key) || (!!url && isFavorited(url))"
+            @toggle-favorite="({ key, url }) => toggleItemFavorite(key, url)"
+          />
+        </n-space>
       </main>
 
       <aside class="sidebar">
         <NoticeBoard :config="notices" />
-        <SidebarQrCodes :reward-code="rewardCode" :group-code="groupCode" />
+        <div class="sidebar__qrcodes-desktop">
+          <SidebarQrCodes :reward-code="rewardCode" :group-code="groupCode" />
+        </div>
       </aside>
     </div>
   </template>
+
+  <div class="mobile-qr">
+    <n-button
+      class="mobile-qr__fab"
+      type="primary"
+      circle
+      aria-label="打开二维码面板"
+      title="打开二维码面板"
+      @click="showMobileQr = true"
+    >
+      ☕
+    </n-button>
+    <div v-if="showMobileQr" class="mobile-qr__mask" @click="showMobileQr = false" />
+    <div v-if="showMobileQr" class="mobile-qr__panel">
+      <div class="mobile-qr__panel-head">
+        <span>扫码入口</span>
+        <n-button text @click="showMobileQr = false">关闭</n-button>
+      </div>
+      <SidebarQrCodes :reward-code="rewardCode" :group-code="groupCode" />
+    </div>
+  </div>
 
   <AdSlot :config="ad" />
 </template>
@@ -374,6 +560,10 @@ const favoriteItems = computed(() => {
   animation: fadeIn 0.4s var(--transition-slow) 0.12s both;
 }
 
+.mobile-qr {
+  display: none;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -396,6 +586,54 @@ const favoriteItems = computed(() => {
 
   .toolbar__row {
     flex-wrap: wrap;
+  }
+
+  .sidebar__qrcodes-desktop {
+    display: none;
+  }
+
+  .mobile-qr {
+    display: block;
+  }
+
+  .mobile-qr__fab {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 90;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  }
+
+  .mobile-qr__mask {
+    position: fixed;
+    inset: 0;
+    z-index: 91;
+    background: rgba(15, 23, 42, 0.35);
+  }
+
+  .mobile-qr__panel {
+    position: fixed;
+    right: 12px;
+    bottom: 72px;
+    z-index: 92;
+    width: min(320px, calc(100vw - 24px));
+    max-height: min(70vh, 520px);
+    overflow: auto;
+    border-radius: 14px;
+    padding: 0.75rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+  }
+
+  .mobile-qr__panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+    color: var(--text);
+    font-size: 0.92rem;
+    font-weight: 600;
   }
 }
 

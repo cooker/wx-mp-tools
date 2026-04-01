@@ -1,5 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import { NButton } from 'naive-ui'
 import PromptSection from './components/PromptSection.vue'
 
 const router = useRouter()
@@ -7,12 +8,9 @@ const router = useRouter()
 
 <template>
   <div class="prompts-view">
-    <a href="#/" class="prompts-view__back" @click.prevent="router.push('/')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <path d="M19 12H5M12 19l-7-7 7-7" />
-      </svg>
-      <span>返回工具导航</span>
-    </a>
+    <n-button quaternary class="prompts-view__back" @click="router.push('/')">
+      ← 返回工具导航
+    </n-button>
     <PromptSection standalone />
   </div>
 </template>
@@ -23,21 +21,7 @@ const router = useRouter()
 }
 
 .prompts-view__back {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text-muted);
   margin-bottom: 1.5rem;
-  transition: color var(--transition);
-}
-.prompts-view__back:hover {
-  color: var(--accent);
-}
-.prompts-view__back svg {
-  width: 1.2rem;
-  height: 1.2rem;
 }
 
 @keyframes fadeIn {

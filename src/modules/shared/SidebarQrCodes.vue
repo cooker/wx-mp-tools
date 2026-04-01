@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { NSpace } from 'naive-ui'
 import QrCodeCard from './QrCodeCard.vue'
 
 const props = defineProps({
@@ -17,7 +18,7 @@ const show = computed(() => showReward.value || showGroup.value)
 </script>
 
 <template>
-  <div v-if="show" class="qr-codes">
+  <n-space v-if="show" class="qr-codes" :wrap-item="true" :size="12">
     <QrCodeCard
       v-if="showReward"
       :title="rewardCode.title || '赞赏'"
@@ -30,21 +31,35 @@ const show = computed(() => showReward.value || showGroup.value)
       :src="groupCode.src"
       :desc="groupCode.desc"
     />
-  </div>
+  </n-space>
 </template>
 
 <style scoped>
 .qr-codes {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
   margin-top: 1rem;
+}
+
+.qr-codes :deep(.n-space-item) {
+  min-width: 0;
 }
 
 @media (max-width: 768px) {
   .qr-codes {
     grid-template-columns: 1fr;
-    max-width: 220px;
+    max-width: 100%;
+  }
+
+  .qr-codes :deep(.n-space-item) {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 359px) {
+  .qr-codes {
+    margin-top: 0.625rem;
   }
 }
 </style>

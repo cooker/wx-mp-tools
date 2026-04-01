@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { NCard, NImage, NModal } from 'naive-ui'
 
 defineProps({
   title: { type: String, required: true },
@@ -33,7 +34,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="qr-card">
+  <n-card class="qr-card" size="small" embedded>
     <h3 class="qr-card__title">{{ title }}</h3>
     <button
       type="button"
@@ -41,55 +42,40 @@ onUnmounted(() => {
       aria-label="点击预览大图"
       @click="openPreview"
     >
-      <img
+      <n-image
         :src="src"
         :alt="title"
         class="qr-card__img"
-        loading="lazy"
+        :width="180"
+        :img-props="{ loading: 'lazy' }"
+        preview-disabled
       />
     </button>
     <p v-if="desc" class="qr-card__desc">{{ desc }}</p>
 
-    <!-- 预览层 -->
-    <Teleport to="body">
-      <Transition name="preview">
-        <div
-          v-if="showPreview"
-          class="qr-preview"
-          role="dialog"
-          aria-modal="true"
-          aria-label="图片预览"
-          @click.self="closePreview"
-        >
-          <button
-            type="button"
-            class="qr-preview__close"
-            aria-label="关闭预览"
-            @click="closePreview"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M18 6 6 18M6 6l12 12" />
-            </svg>
-          </button>
-          <img
-            :src="src"
-            :alt="title"
-            class="qr-preview__img"
-            @click.stop
-          />
-        </div>
-      </Transition>
-    </Teleport>
-  </div>
+    <n-modal
+      v-model:show="showPreview"
+      preset="card"
+      title="图片预览"
+      class="qr-preview-modal"
+      style="max-width: min(92vw, 840px)"
+      :bordered="false"
+      size="small"
+    >
+      <n-image
+        :src="src"
+        :alt="title"
+        class="qr-preview__img"
+        preview-disabled
+      />
+    </n-modal>
+  </n-card>
 </template>
 
 <style scoped>
 .qr-card {
   position: relative;
   padding: 1rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
   text-align: center;
 }
 
@@ -101,26 +87,25 @@ onUnmounted(() => {
 }
 
 .qr-card__img-wrap {
-  display: inline-block;
-  padding: 0;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
   margin: 0 auto;
-  background: none;
-  border: none;
-  border-radius: var(--radius);
+  padding: 0;
+  border: 0;
+  background: transparent;
   cursor: pointer;
-  transition: transform var(--transition);
-}
-.qr-card__img-wrap:hover {
-  transform: scale(1.05);
 }
 
 .qr-card__img {
-  display: block;
-  width: auto;
+  display: inline-block;
+  width: 180px;
   height: auto;
   max-width: 100%;
-  border-radius: var(--radius);
-  pointer-events: none;
+}
+
+.qr-card :deep(.n-image img) {
+  border-radius: 10px;
 }
 
 .qr-card__desc {
@@ -130,81 +115,34 @@ onUnmounted(() => {
   margin-bottom: 0;
 }
 
-/* 预览层 */
-.qr-preview {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  background: rgba(0, 0, 0, 0.85);
-  cursor: zoom-out;
-}
-
-.qr-preview__close {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  color: var(--text-muted);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: color var(--transition), background var(--transition);
-}
-.qr-preview__close:hover {
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.12);
-}
-.qr-preview__close svg {
-  width: 20px;
-  height: 20px;
-}
-
 .qr-preview__img {
-  max-width: 90vw;
-  max-height: 85vh;
-  width: auto;
-  height: auto;
+  width: 100%;
+  max-height: 75vh;
   object-fit: contain;
-  border-radius: var(--radius);
-  cursor: default;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
-.preview-enter-active,
-.preview-leave-active {
-  transition: opacity 0.2s ease;
-}
-.preview-enter-from,
-.preview-leave-to {
-  opacity: 0;
-}
-.preview-enter-active .qr-preview__img,
-.preview-leave-active .qr-preview__img {
-  transition: transform 0.2s ease;
-}
-.preview-enter-from .qr-preview__img,
-.preview-leave-to .qr-preview__img {
-  transform: scale(0.95);
+.qr-preview-modal :deep(.n-card__content) {
+  display: flex;
+  justify-content: center;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .preview-enter-active,
-  .preview-leave-active {
-    transition: none;
+@media (max-width: 359px) {
+  .qr-card {
+    padding: 0.625rem;
   }
-  .preview-enter-from .qr-preview__img,
-  .preview-leave-to .qr-preview__img {
-    transform: none;
+
+  .qr-card__title {
+    font-size: 0.82rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .qr-card__img {
+    width: 148px;
+  }
+
+  .qr-card__desc {
+    font-size: 0.75rem;
+    margin-top: 0.375rem;
   }
 }
 </style>
