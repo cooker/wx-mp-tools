@@ -124,6 +124,11 @@ async function copyExtractCode() {
   background: var(--bg-elevated);
 }
 
+.tool-card__link:focus-visible {
+  outline: 2px solid rgba(110, 160, 255, 0.65);
+  outline-offset: 3px;
+}
+
 .tool-card__star {
   position: absolute;
   top: 0.5rem;
@@ -219,6 +224,12 @@ async function copyExtractCode() {
 
 .tool-card__extract-copy {
   padding: 0;
+}
+.tool-card__extract-copy:not(:disabled):hover {
+  color: var(--accent);
+}
+.tool-card__extract-copy:not(:disabled):active {
+  transform: translateY(0.5px);
 }
 
 .tool-card__arrow {

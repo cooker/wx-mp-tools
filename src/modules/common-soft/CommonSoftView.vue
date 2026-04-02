@@ -67,33 +67,42 @@ const allItems = computed(() => {
       url: getItemUrlString(item),
       urlKey: item?.urlKey || item?.id || String(item?.title || item?.name || item?.url || ''),
       usingFallback: false,
+      __searchText: normalizeSearchText([
+        item?.title,
+        item?.name,
+        item?.desc,
+        item?.description,
+        item?.extractCode,
+        item?.extract,
+        getItemUrlString(item),
+      ].filter(Boolean).join(' ')),
+      __searchCompactText: compactSearchText([
+        item?.title,
+        item?.name,
+        item?.desc,
+        item?.description,
+        item?.extractCode,
+        item?.extract,
+        getItemUrlString(item),
+      ].filter(Boolean).join(' ')),
     }))
     .filter((i) => !!i.url)
 })
 
-function matchItem(item, q) {
+function matchItem(item, q, compactQuery, allowSubsequence) {
   if (!q) return true
-  const fullText = normalizeSearchText([
-    item.title,
-    item.name,
-    item.desc,
-    item.description,
-    item.extractCode,
-    item.extract,
-    item.url,
-  ].filter(Boolean).join(' '))
-
+  const fullText = item?.__searchText || ''
   if (fullText.includes(q)) return true
-  const compactFullText = compactSearchText(fullText)
-  const compactQuery = compactSearchText(q)
+  const compactFullText = item?.__searchCompactText || compactSearchText(fullText)
   if (compactFullText.includes(compactQuery)) return true
-  const allowSubsequence = compactQuery.length >= 3
   return allowSubsequence && isSubsequenceMatch(compactFullText, compactQuery)
 }
 
 const filteredItems = computed(() => {
   const q = searchDebounced.value
-  return allItems.value.filter((item) => matchItem(item, q))
+  const compactQuery = compactSearchText(q)
+  const allowSubsequence = compactQuery.length >= 3
+  return allItems.value.filter((item) => matchItem(item, q, compactQuery, allowSubsequence))
 })
 
 const loading = computed(() => false)
@@ -241,6 +250,11 @@ const visibleCount = computed(() => filteredItems.value.length)
 .common-soft-view :deep(.category__grid) {
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 0.9rem;
+}
+
+.common-soft-view :deep(.tool-card) {
+  content-visibility: auto;
+  contain-intrinsic-size: 160px 360px;
 }
 
 .common-soft-view :deep(.category__title) {

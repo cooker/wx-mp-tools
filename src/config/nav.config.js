@@ -127,6 +127,7 @@ export const navConfig = {
         { name: 'GitHub加速 🇺🇸', url: 'https://play.ruanyazyk.com/github.html', desc: 'GitHub加速', icon: '🇺🇸' },
         { name: 'Windows 启动盘', url: 'https://rufus.ie/zh/', desc: '启动盘制作', icon: '💻' },
         { name: '个人播客', url: 'https://tianji.dev/', desc: '网站监控', icon: '🌍' },
+        { name: '前端美化 SKILL', url: 'https://impeccable.style/#cmd-audit', desc: '前端美化 SKILL', icon: '🔧' },
       ],
     },
     {
