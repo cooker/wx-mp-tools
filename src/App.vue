@@ -25,11 +25,13 @@ const { site } = navConfig
 
 const showPromptsLink = computed(() => Boolean(promptConfig?.enabled))
 const showSqlLink = computed(() => Boolean(sqlConfig?.enabled))
-const showHeaderNav = computed(() => showPromptsLink.value || showSqlLink.value)
+const showCommonSoftLink = computed(() => Boolean(navConfig?.categories?.some((c) => c.id === 'common-soft')))
+const showHeaderNav = computed(() => showPromptsLink.value || showSqlLink.value || showCommonSoftLink.value)
 
 const isHome = computed(() => route.name === 'home')
 const isPrompts = computed(() => route.name === 'prompts')
 const isSql = computed(() => route.name === 'sql')
+const isCommonSoft = computed(() => route.name === 'common-soft')
 
 const sqlNavLabel = computed(() => sqlConfig?.navLabel || 'SQL 模板')
 </script>
@@ -59,6 +61,11 @@ const sqlNavLabel = computed(() => sqlConfig?.navLabel || 'SQL 模板')
                   <router-link v-if="showSqlLink" to="/sql" class="header__nav-link">
                     <n-button size="small" :type="isSql ? 'primary' : 'default'" quaternary>
                       {{ sqlNavLabel }}
+                    </n-button>
+                  </router-link>
+                  <router-link v-if="showCommonSoftLink" to="/common-soft" class="header__nav-link">
+                    <n-button size="small" :type="isCommonSoft ? 'primary' : 'default'" quaternary>
+                      常用软件
                     </n-button>
                   </router-link>
                 </n-space>

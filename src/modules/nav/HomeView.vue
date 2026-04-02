@@ -31,6 +31,9 @@ const searchExpanded = ref(true)
 const showMobileQr = ref(false)
 const isSearchMobile = ref(false)
 
+// `common-soft` 已单独作为页面（/common-soft）维护，首页不再展示该分类
+const homeCategories = computed(() => categories.filter((c) => c.id !== 'common-soft'))
+
 function checkSearchMobile() {
   isSearchMobile.value = typeof window !== 'undefined' && window.innerWidth < 768
 }
@@ -70,7 +73,10 @@ function getItemSearchText(item, category) {
   collectSearchableTexts(
     {
       name: item?.name,
+      title: item?.title,
       description: item?.description,
+      extractCode: item?.extractCode,
+      extract: item?.extract,
       desc: item?.desc,
       summary: item?.summary,
       tags: item?.tags,
@@ -135,10 +141,10 @@ function getItemResolvedUrl(item) {
 }
 
 function getItemUrlKey(item) {
-  if (item.internal) return String(item.url || item.name || '')
+  if (item.internal) return String(item.url || item.title || item.name || '')
   if (item.id) return String(item.id)
   const candidates = getItemUrlCandidates(item)
-  return `${item.name || 'item'}::${candidates[0] || ''}`
+  return `${item.title || item.name || 'item'}::${candidates[0] || ''}`
 }
 
 function withTimeout(promise, ms) {
@@ -202,7 +208,7 @@ async function resolveUrls() {
   const now = Date.now()
 
   const tasks = []
-  categories.forEach((cat) => {
+  homeCategories.value.forEach((cat) => {
     cat.items.forEach((item) => {
       if (item.internal) return
       const candidates = getItemUrlCandidates(item)
@@ -304,7 +310,7 @@ const filteredCategories = computed(() => {
   const cat = activeCategory.value
   const favOnly = showFavoritesOnly.value
 
-  return categories
+  return homeCategories.value
     .filter((c) => !cat || c.id === cat)
     .map((c) => ({
       ...c,
@@ -316,7 +322,8 @@ const filteredCategories = computed(() => {
         return true
       }).map((item) => decorateItem(item, c.id)),
     }))
-    .filter((c) => c.items.length > 0)
+    // 支持：部分分类（如「常用软件」）即使没配 items 也要显示骨架
+    .filter((c) => c.items.length > 0 || (!!c.showWhenEmpty && !q))
 })
 
 const hasNoResults = computed(() =>
@@ -327,7 +334,7 @@ const hasNoResults = computed(() =>
 
 const allItemsFlat = computed(() => {
   const items = []
-  categories.forEach((c) => {
+  homeCategories.value.forEach((c) => {
     c.items.forEach((item) => items.push(decorateItem(item, c.id)))
   })
   return items
@@ -337,12 +344,12 @@ const favoriteItems = computed(() => {
   const q = searchDebounced.value
   return allItemsFlat.value.filter((item) => {
     if (!isItemFavorited(item)) return false
-    return matchItem(item, q, categories.find((c) => c.id === item.categoryId))
+    return matchItem(item, q, homeCategories.value.find((c) => c.id === item.categoryId))
   })
 })
 
 const visibleCategoriesForTabs = computed(() => {
-  const base = searchDebounced.value ? filteredCategories.value : categories
+  const base = searchDebounced.value ? filteredCategories.value : homeCategories.value
   return base.map((c) => ({ id: c.id, name: c.name, icon: c.icon }))
 })
 </script>

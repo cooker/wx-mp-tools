@@ -3,11 +3,13 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 const loadHomeView = () => import('../modules/nav/HomeView.vue')
 const loadPromptsView = () => import('../modules/prompts/PromptsView.vue')
 const loadSqlView = () => import('../modules/sql/SqlTemplatesView.vue')
+const loadCommonSoftView = () => import('../modules/common-soft/CommonSoftView.vue')
 
 const routeComponentLoaders = {
   home: loadHomeView,
   prompts: loadPromptsView,
   sql: loadSqlView,
+  'common-soft': loadCommonSoftView,
 }
 
 export const router = createRouter({
@@ -30,6 +32,12 @@ export const router = createRouter({
       name: 'sql',
       component: loadSqlView,
       meta: { title: 'SQL 模板' },
+    },
+    {
+      path: '/common-soft',
+      name: 'common-soft',
+      component: loadCommonSoftView,
+      meta: { title: '常用软件' },
     },
   ],
 })

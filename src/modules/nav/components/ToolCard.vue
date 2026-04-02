@@ -1,17 +1,44 @@
 <script setup>
+import { ref } from 'vue'
 import { NButton, NCard } from 'naive-ui'
 
-defineProps({
+const props = defineProps({
   name: { type: String, required: true },
   url: { type: String, required: true },
   desc: { type: String, default: '' },
   icon: { type: String, default: '' },
+  /**
+   * 可选：用于展示标题（当你希望与 `name` 分离时使用）。
+   * 为保持兼容，模板会自动退回到 `name`。
+   */
+  title: { type: String, default: '' },
+  /**
+   * 可选：网盘提取码（会显示并支持一键复制）
+   */
+  extractCode: { type: String, default: '' },
   usingFallback: { type: Boolean, default: false },
   favorited: { type: Boolean, default: false },
   /** 站内链接：使用 router-link，不新开标签 */
   internal: { type: Boolean, default: false },
 })
 defineEmits(['toggle-favorite'])
+
+const copied = ref(false)
+let copyTimeout = null
+
+async function copyExtractCode() {
+  const code = props.extractCode
+  if (!code) return
+  try {
+    await navigator.clipboard.writeText(code)
+    copied.value = true
+    clearTimeout(copyTimeout)
+    copyTimeout = setTimeout(() => { copied.value = false }, 1500)
+  } catch {
+    // Clipboard 权限/环境限制：不影响点击打开链接
+    copied.value = false
+  }
+}
 </script>
 
 <template>
@@ -48,8 +75,26 @@ defineEmits(['toggle-favorite'])
     >
       <span v-if="icon" class="tool-card__icon" aria-hidden="true">{{ icon }}</span>
       <div class="tool-card__body">
-        <span class="tool-card__name">{{ name }}</span>
+        <span class="tool-card__name">{{ title || name }}</span>
         <span v-if="desc" class="tool-card__desc">{{ desc }}</span>
+        <span
+          v-if="extractCode"
+          class="tool-card__extract"
+          aria-label="提取码"
+        >
+          <span class="tool-card__extract-label">提取码：</span>
+          <span class="tool-card__extract-code">{{ extractCode }}</span>
+          <n-button
+            class="tool-card__extract-copy"
+            text
+            size="tiny"
+            :aria-label="copied ? '已复制' : '复制提取码'"
+            :disabled="copied"
+            @click.stop="copyExtractCode"
+          >
+            {{ copied ? '已复制' : '复制' }}
+          </n-button>
+        </span>
       </div>
       <span class="tool-card__arrow" aria-hidden="true">→</span>
     </component>
@@ -148,6 +193,34 @@ defineEmits(['toggle-favorite'])
   line-height: 1.4;
 }
 
+.tool-card__extract {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.tool-card__extract-label {
+  white-space: nowrap;
+}
+
+.tool-card__extract-code {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.88em;
+  padding: 0.08rem 0.35rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text);
+}
+
+.tool-card__extract-copy {
+  padding: 0;
+}
+
 .tool-card__arrow {
   font-size: 1rem;
   color: var(--accent);
@@ -196,6 +269,11 @@ defineEmits(['toggle-favorite'])
 
   .tool-card__desc {
     display: none;
+  }
+
+  .tool-card__extract {
+    justify-content: center;
+    width: 100%;
   }
 
   .tool-card__arrow {

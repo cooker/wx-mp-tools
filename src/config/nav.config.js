@@ -6,6 +6,9 @@
  * - site: 站点标题、描述等
  * - categories: 分类列表，每个分类包含 name、icon(可选)、items
  * - items: 链接列表，每项包含 name、url、desc(可选)、icon(可选)、internal(可选，站内链接)
+ *   - title(可选)：用于展示标题（默认回退到 name）
+ *   - extractCode(可选)：网盘提取码（会展示并支持复制）
+ *   - description(可选)：描述别名（与 desc 二选一）
  *   - url 支持 string 或 string[]（外链数组时首页会异步探测可用地址并自动选择）
  * - performance: 性能策略配置（可选），统一管理链接探测和路由预热
  * - ad: 底部广告位，支持多个广告轮播，每项可选 image / html / link
@@ -36,7 +39,7 @@ export const navConfig = {
       enabled: true,
       timeoutMs: 2000,
       delayMs: 600,
-      routes: ['prompts', 'sql'],
+      routes: ['prompts', 'sql', 'common-soft'],
     },
   },
 
@@ -158,6 +161,27 @@ export const navConfig = {
         { name: 'windows自动登录', url: 'https://learn.microsoft.com/en-us/sysinternals/downloads/autologon', desc: 'windows自动登录', icon: '💻' },
         { name: 'AI 设计稿', url: 'https://www.mockdown.design/', desc: 'markdown 设计稿', icon: '🎵' },
         { name: 'Linux 诊断工具', url: ['https://github.com/pranshuparmar/witr'], desc: 'Linux 诊断工具', icon: '💬' },
+      ],
+    },
+    {
+      id: 'common-soft',
+      name: '常用软件',
+      icon: '📦',
+      size: 'md',
+      /**
+       * 即使 items 为空也显示骨架，方便你直接在这里维护
+       *（例如补充网盘文件链接、图标、描述、标题、提取码等字段）
+       */
+      showWhenEmpty: true,
+      items: [
+        // 示例（请按需删除/替换）：
+        {
+          title: '某常用软件',
+          url: 'https://pan.quark.cn/s/9532d26de8eb',
+          icon: '🧩',
+          desc: '软件描述（可选）',
+          extractCode: 'AAA',
+        }
       ],
     },
   ],
