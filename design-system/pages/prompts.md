@@ -96,7 +96,7 @@ tags: 代码, 测试
 |------|------|
 | `PromptSection.vue` | 区块容器，集成搜索、筛选、卡片网格 |
 | `PromptCard.vue` | 单张提示词卡片：标题、标签、内容预览、复制按钮 |
-| `PromptSearchBar.vue` | 可选复用 SearchBar 或轻量输入框 |
+| `PromptSearchBar.vue` | 提示词页独立搜索输入（与首页搜索组件不共用） |
 | `PromptFilterTabs.vue` | 标签筛选，从所有 items 的 tags 去重生成 |
 | `composables/usePrompts.js` | 加载逻辑（config + url + file + manifest）、搜索/筛选计算 |
 
@@ -141,7 +141,7 @@ tags: 代码, 测试
 
 ### 5.5 搜索框
 
-- 与主工具栏 SearchBar 风格一致
+- 与全站输入组件（Naive `NInput`）视觉一致即可
 - 占位符：「搜索提示词…」
 - Debounce：300ms
 

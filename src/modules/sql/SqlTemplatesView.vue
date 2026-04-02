@@ -90,7 +90,8 @@ async function ensureCodeMirrorDeps() {
       EditorView: codemirrorMod.EditorView,
       basicSetup: codemirrorMod.basicSetup,
       EditorState: stateMod.EditorState,
-      sql: sqlMod.sql,
+      // MySQL 方言与模板 DDL 一致，高亮与解析更完整
+      sql: () => sqlMod.sql({ dialect: sqlMod.MySQL }),
       oneDark: oneDarkMod.oneDark,
     }
     return cmDeps.value
@@ -185,10 +186,11 @@ const isDdlSection = computed(() => activeSection.value === 'DDL')
 const isDevSection = computed(() => activeSection.value === 'DEV')
 
 function sqlEditorExtensions(deps) {
+  const oneDarkExt = Array.isArray(deps.oneDark) ? deps.oneDark : [deps.oneDark]
   return [
     deps.basicSetup,
     deps.sql(),
-    deps.oneDark,
+    ...oneDarkExt,
     deps.EditorView.theme({
       '&': { fontSize: '13px' },
       '.cm-editor': { borderRadius: 'var(--radius)' },
@@ -421,15 +423,6 @@ const metaMissing = computed(() => {
       <aside class="sql-layout__side" aria-label="模板列表">
         <n-card embedded size="small">
           <h2 class="sql-layout__side-title">模板</h2>
-          <n-input
-            v-model="searchQuery"
-            type="search"
-            class="sql-layout__search"
-            placeholder="搜索模板（全文）"
-            clearable
-          >
-            <template #prefix>🔎</template>
-          </n-input>
           <p v-if="!filteredTemplates.length" class="sql-layout__empty-tip">无匹配模板</p>
           <ul class="sql-layout__list">
             <li v-for="t in filteredTemplates" :key="t.id">
@@ -899,6 +892,10 @@ const metaMissing = computed(() => {
   font-size: 0.82rem;
   line-height: 1.5;
 }
+.sql-dev-md :deep(pre:has(code.hljs)) {
+  background: #22272e;
+  color: #adbac7;
+}
 .sql-dev-md :deep(code) {
   font-family: var(--font-mono);
   font-size: 0.88em;
@@ -910,6 +907,9 @@ const metaMissing = computed(() => {
   padding: 0;
   background: transparent;
   font-size: 0.85rem;
+}
+.sql-dev-md :deep(pre code.hljs) {
+  font-family: var(--font-mono);
 }
 .sql-dev-md :deep(blockquote) {
   margin: 0.5rem 0;
@@ -988,6 +988,9 @@ const metaMissing = computed(() => {
 
 .sql-editor-host :deep(.cm-editor) {
   background: #282c34;
+  /* 避免 Naive Layout 的 color 继承压过 CodeMirror 主题 token 色 */
+  color: #abb2bf;
+  font-family: var(--font-mono), ui-monospace, monospace;
 }
 
 @keyframes fadeIn {

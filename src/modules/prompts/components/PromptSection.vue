@@ -19,18 +19,6 @@ const show = computed(() => Boolean(config?.enabled))
     <h2 class="prompt-section__title">{{ config.title || '开发提示词' }}</h2>
 
     <div class="prompt-section__toolbar">
-      <div class="prompt-section__search">
-        <n-input
-          v-model="searchQuery"
-          type="search"
-          class="prompt-section__input"
-          placeholder="搜索提示词…"
-          aria-label="搜索提示词"
-          clearable
-        >
-          <template #prefix>🔎</template>
-        </n-input>
-      </div>
       <n-space class="prompt-section__filters" role="tablist" aria-label="标签筛选" :wrap="true" :size="[8, 8]">
         <n-button
           role="tab"

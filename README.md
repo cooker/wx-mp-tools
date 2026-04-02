@@ -234,7 +234,7 @@ tags: 代码, 测试
 │   ├── modules/             ← 按功能模块
 │   │   ├── nav/             ← 工具导航
 │   │   │   ├── HomeView.vue
-│   │   │   └── components/   CategorySection, FilterTabs, SearchBar, ToolCard
+│   │   │   └── components/   CategorySection, FilterTabs, ToolCard
 │   │   ├── prompts/         ← 提示词
 │   │   │   ├── PromptsView.vue
 │   │   │   └── components/   PromptSection, PromptCard

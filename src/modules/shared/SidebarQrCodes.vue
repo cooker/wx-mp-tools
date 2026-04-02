@@ -48,12 +48,6 @@ const show = computed(() => showReward.value || showGroup.value)
   }
 }
 
-@media (max-width: 420px) {
-  .qr-codes {
-    grid-template-columns: 1fr;
-  }
-}
-
 @media (max-width: 359px) {
   .qr-codes {
     margin-top: 0.625rem;

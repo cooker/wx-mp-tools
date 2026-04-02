@@ -1,10 +1,54 @@
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
+import hljs from 'highlight.js/lib/core'
+import sql from 'highlight.js/lib/languages/sql'
+import json from 'highlight.js/lib/languages/json'
+import bash from 'highlight.js/lib/languages/bash'
+import http from 'highlight.js/lib/languages/http'
+import 'highlight.js/styles/github-dark-dimmed.css'
 import { devSqlToMarkdown } from './devSqlToMarkdown.js'
+
+hljs.registerLanguage('sql', sql)
+hljs.registerLanguage('mysql', sql)
+hljs.registerLanguage('mariadb', sql)
+hljs.registerLanguage('json', json)
+hljs.registerLanguage('bash', bash)
+hljs.registerLanguage('sh', bash)
+hljs.registerLanguage('http', http)
 
 marked.setOptions({
   gfm: true,
   breaks: true,
+})
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+marked.use({
+  renderer: {
+    code({ text, lang }) {
+      const raw = String(text).replace(/\n$/, '')
+      const langKey = (lang || '').trim().toLowerCase()
+      let highlighted = ''
+      try {
+        if (langKey && hljs.getLanguage(langKey)) {
+          highlighted = hljs.highlight(raw, { language: langKey }).value
+        } else {
+          const auto = hljs.highlightAuto(raw, ['sql', 'json', 'http', 'bash'])
+          highlighted = auto.value
+        }
+      } catch {
+        highlighted = escapeHtml(raw)
+      }
+      const langClass = langKey && hljs.getLanguage(langKey) ? `language-${langKey}` : ''
+      return `<pre><code class="hljs ${langClass}">${highlighted}</code></pre>`
+    },
+  },
 })
 
 const purifyConfig = {

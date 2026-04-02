@@ -162,6 +162,87 @@ defineEmits(['toggle-favorite'])
   transform: translateX(0);
 }
 
+/* 移动端三列：竖向紧凑卡片，隐藏描述与箭头，保证可点区域 */
+@media (max-width: 768px) {
+  .tool-card__link {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0.45rem 0.3rem 0.5rem;
+    gap: 0.3rem;
+    min-height: 0;
+    text-align: center;
+  }
+
+  .tool-card__icon {
+    font-size: 1.05rem;
+  }
+
+  .tool-card__body {
+    align-items: center;
+    width: 100%;
+  }
+
+  .tool-card__name {
+    font-size: 0.72rem;
+    line-height: 1.25;
+    text-align: center;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    word-break: break-word;
+  }
+
+  .tool-card__desc {
+    display: none;
+  }
+
+  .tool-card__arrow {
+    display: none;
+  }
+
+  .tool-card__star {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    top: 0.15rem;
+    right: 0.15rem;
+    margin: -6px -6px 0 0;
+  }
+
+  .tool-card__star-icon {
+    width: 17px;
+    height: 17px;
+  }
+
+  .tool-card__fallback-badge {
+    font-size: 0.58rem;
+    padding: 0.06rem 0.28rem;
+    top: 0.2rem;
+    left: 0.2rem;
+    max-width: calc(100% - 3rem);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 380px) {
+  .tool-card__link {
+    padding: 0.4rem 0.2rem 0.45rem;
+  }
+
+  .tool-card__name {
+    font-size: 0.68rem;
+  }
+
+  .tool-card__icon {
+    font-size: 0.95rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tool-card__star:active {
     transform: none;

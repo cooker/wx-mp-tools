@@ -22,7 +22,11 @@ export default defineConfig({
             if (id.includes('naive-ui')) {
               return 'vendor-naive'
             }
-            if (id.includes('marked') || id.includes('dompurify')) {
+            if (
+              id.includes('marked') ||
+              id.includes('dompurify') ||
+              id.includes('highlight.js')
+            ) {
               return 'vendor-markdown'
             }
           }

@@ -62,7 +62,10 @@ export function usePrompts() {
   const searchDebounced = ref('')
 
   function normalizeSearchText(value) {
-    return String(value ?? '').trim().toLowerCase()
+    return String(value ?? '')
+      .normalize('NFKC')
+      .trim()
+      .toLowerCase()
   }
 
   function compactSearchText(value) {
@@ -95,12 +98,21 @@ export function usePrompts() {
 
   function getPromptSearchText(prompt) {
     const parts = []
-    collectSearchableTexts(prompt, parts)
+    collectSearchableTexts(
+      {
+        id: prompt?.id,
+        title: prompt?.title,
+        tags: prompt?.tags,
+        content: prompt?.content,
+      },
+      parts,
+    )
     return normalizeSearchText(parts.join(' '))
   }
 
   let debounceTimer = null
   watch(searchQuery, (v) => {
+    if (normalizeSearchText(v)) activeTag.value = ''
     clearTimeout(debounceTimer)
     debounceTimer = setTimeout(() => {
       searchDebounced.value = normalizeSearchText(v)
@@ -135,6 +147,7 @@ export function usePrompts() {
     const tag = activeTag.value
     return prompts.value.filter((p) => {
       if (!matchPrompt(p, q)) return false
+      if (q) return true
       if (tag && !(p.tags || []).includes(tag)) return false
       return true
     })

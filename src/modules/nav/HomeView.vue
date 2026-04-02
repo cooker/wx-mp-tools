@@ -1,11 +1,10 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
-import { NButton, NEmpty, NSpace } from 'naive-ui'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { NButton, NEmpty, NInput, NSpace } from 'naive-ui'
 import { navConfig } from '../../config/nav.config.js'
 import { sqlConfig } from '../../config/sql.config.js'
 import { preloadRouteComponents } from '../../router/index.js'
 import CategorySection from './components/CategorySection.vue'
-import SearchBar from './components/SearchBar.vue'
 import FilterTabs from './components/FilterTabs.vue'
 import AdSlot from '../shared/AdSlot.vue'
 import NoticeBoard from '../shared/NoticeBoard.vue'
@@ -30,6 +29,15 @@ const activeCategory = ref('')
 const showFavoritesOnly = ref(false)
 const searchExpanded = ref(true)
 const showMobileQr = ref(false)
+const isSearchMobile = ref(false)
+
+function checkSearchMobile() {
+  isSearchMobile.value = typeof window !== 'undefined' && window.innerWidth < 768
+}
+
+const showHomeSearchInput = computed(
+  () => searchExpanded.value || !isSearchMobile.value
+)
 
 const searchDebounced = ref('')
 let debounceTimer = null
@@ -100,8 +108,6 @@ watch(searchQuery, (v) => {
   }, 300)
 }, { immediate: true })
 
-const SEARCH_DEBUG = typeof import.meta !== 'undefined' && !!import.meta.env?.DEV
-
 function matchItem(item, q, category) {
   if (!q) return true
   const fullText = getItemSearchText(item, category)
@@ -116,65 +122,6 @@ function matchItem(item, q, category) {
     (allowSubsequence && isSubsequenceMatch(compactFullText, compactQuery))
   )
 }
-
-function getMatchReason(item, query, category) {
-  const fullText = getItemSearchText(item, category)
-  const compactText = compactSearchText(fullText)
-  const compactQuery = compactSearchText(query)
-  const allowSubsequence = compactQuery.length >= 3
-  const includes = fullText.includes(query)
-  const compactIncludes = compactText.includes(compactQuery)
-  const subsequence = allowSubsequence && isSubsequenceMatch(compactText, compactQuery)
-  return {
-    matched: includes || compactIncludes || subsequence,
-    includes,
-    compactIncludes,
-    subsequence,
-    fullText,
-  }
-}
-
-watch(searchDebounced, (query) => {
-  if (!SEARCH_DEBUG || !query) return
-  const stats = {
-    total: 0,
-    matched: 0,
-    byIncludes: 0,
-    byCompactIncludes: 0,
-    bySubsequence: 0,
-    withHttpInText: 0,
-  }
-  const sampleMatches = []
-  categories.forEach((category) => {
-    category.items.forEach((item) => {
-      stats.total += 1
-      const reason = getMatchReason(item, query, category)
-      if (!reason.matched) return
-      stats.matched += 1
-      if (reason.includes) stats.byIncludes += 1
-      if (reason.compactIncludes) stats.byCompactIncludes += 1
-      if (reason.subsequence) stats.bySubsequence += 1
-      if (reason.fullText.includes('http')) stats.withHttpInText += 1
-      if (sampleMatches.length < 8) {
-        sampleMatches.push({
-          name: item.name,
-          category: category.name,
-          includes: reason.includes,
-          compactIncludes: reason.compactIncludes,
-          subsequence: reason.subsequence,
-          textPreview: reason.fullText.slice(0, 160),
-        })
-      }
-    })
-  })
-  console.groupCollapsed(`[search-debug] query="${query}"`)
-  console.log('[search-debug] stats', stats)
-  console.log('[search-debug] sampleMatches', sampleMatches)
-  if (stats.matched > 0 && stats.withHttpInText === stats.matched) {
-    console.warn('[search-debug] 所有命中项均包含 URL 文本，可能导致搜索看起来“无筛选效果”')
-  }
-  console.groupEnd()
-})
 
 function getItemUrlCandidates(item) {
   if (Array.isArray(item.url)) return item.url.filter(Boolean)
@@ -292,6 +239,11 @@ async function resolveUrls() {
 }
 
 onMounted(() => {
+  checkSearchMobile()
+  if (typeof window !== 'undefined') {
+    window.addEventListener('resize', checkSearchMobile)
+  }
+
   const cache = loadResolveCache()
   const now = Date.now()
   const warmup = {}
@@ -318,6 +270,12 @@ onMounted(() => {
     window.requestIdleCallback(warmupRoutes, { timeout: warmupTimeoutMs })
   } else {
     setTimeout(warmupRoutes, warmupDelayMs)
+  }
+})
+
+onBeforeUnmount(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('resize', checkSearchMobile)
   }
 })
 
@@ -392,7 +350,37 @@ const visibleCategoriesForTabs = computed(() => {
 <template>
   <div class="toolbar">
     <div class="toolbar__row">
-      <SearchBar v-model="searchQuery" v-model:expanded="searchExpanded" />
+      <div class="home-search">
+        <n-button
+          v-if="isSearchMobile && !searchExpanded"
+          class="home-search__toggle"
+          aria-label="展开搜索"
+          @click="searchExpanded = true"
+        >
+          🔍
+        </n-button>
+        <div v-show="showHomeSearchInput" class="home-search__wrap">
+          <n-input
+            v-model:value="searchQuery"
+            type="search"
+            class="home-search__input"
+            placeholder="搜索工具名称或描述…"
+            aria-label="搜索工具"
+            clearable
+          >
+            <template #prefix>🔎</template>
+          </n-input>
+          <n-button
+            v-if="isSearchMobile && searchExpanded"
+            class="home-search__close"
+            text
+            aria-label="收起搜索"
+            @click="searchExpanded = false"
+          >
+            ✕
+          </n-button>
+        </div>
+      </div>
       <n-button
         class="btn-favorites"
         :type="showFavoritesOnly ? 'primary' : 'default'"
@@ -492,6 +480,37 @@ const visibleCategoriesForTabs = computed(() => {
   gap: 0.75rem;
   align-items: center;
   margin-bottom: 0.75rem;
+}
+
+.home-search {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.home-search__toggle {
+  width: 48px;
+  height: 48px;
+}
+
+.home-search__wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.home-search__input {
+  width: 100%;
+}
+
+.home-search__close {
+  position: absolute;
+  right: 0.5rem;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  padding: 0;
+  z-index: 1;
 }
 
 .btn-favorites {
@@ -616,14 +635,68 @@ const visibleCategoriesForTabs = computed(() => {
     right: 12px;
     bottom: 72px;
     z-index: 92;
-    width: min(320px, calc(100vw - 24px));
+    /* 容纳左右两枚二维码（缩略尺寸） */
+    width: min(400px, calc(100vw - 16px));
     max-height: min(70vh, 520px);
     overflow: auto;
     border-radius: 14px;
-    padding: 0.75rem;
+    padding: 0.65rem 0.55rem;
     background: var(--bg-card);
     border: 1px solid var(--border);
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+  }
+
+  /* 扫码面板内：固定两列左右排布，略缩小卡片与图，避免挤爆窄屏 */
+  .mobile-qr__panel :deep(.qr-codes) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+    margin-top: 0.45rem;
+  }
+
+  .mobile-qr__panel :deep(.qr-card) {
+    padding: 0.45rem 0.3rem;
+  }
+
+  .mobile-qr__panel :deep(.qr-card__title) {
+    font-size: 0.72rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .mobile-qr__panel :deep(.qr-card__img) {
+    width: 128px;
+    height: 128px;
+    max-width: 100%;
+  }
+
+  .mobile-qr__panel :deep(.qr-card__img img),
+  .mobile-qr__panel :deep(.n-image img) {
+    width: 128px !important;
+    height: 128px !important;
+    max-width: 100% !important;
+    object-fit: cover;
+  }
+
+  .mobile-qr__panel :deep(.qr-card__desc) {
+    font-size: 0.68rem;
+    margin-top: 0.3rem;
+    line-height: 1.35;
+  }
+
+  @media (max-width: 359px) {
+    .mobile-qr__panel :deep(.qr-card__img) {
+      width: 108px;
+      height: 108px;
+    }
+
+    .mobile-qr__panel :deep(.qr-card__img img),
+    .mobile-qr__panel :deep(.n-image img) {
+      width: 108px !important;
+      height: 108px !important;
+    }
+
+    .mobile-qr__panel :deep(.qr-codes) {
+      gap: 0.35rem;
+    }
   }
 
   .mobile-qr__panel-head {

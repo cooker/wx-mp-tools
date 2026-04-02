@@ -90,6 +90,28 @@ const gridClass = computed(() => {
   }
 }
 
+/* 移动端：一行三列，列宽均分 */
+@media (max-width: 768px) {
+  .category__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+
+  .category__title {
+    font-size: 0.8rem;
+    margin-bottom: 0.65rem;
+    letter-spacing: 0.05em;
+  }
+
+  .category__icon {
+    font-size: 1rem;
+  }
+
+  .category :deep(.n-card-content) {
+    padding: 0.65rem 0.5rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .category {
     animation: none;
