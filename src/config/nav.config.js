@@ -165,6 +165,15 @@ export const navConfig = {
       ],
     },
     {
+      id: 'blog',
+      name: '博客分享',
+      icon: '📦',
+      size: 'md',
+      items: [
+        { name: 'hash一致性', url: 'https://eli.thegreenplace.net/2025/consistent-hashing', desc: 'hash一致性', icon: '🧩' },
+      ],
+    },
+    {
       id: 'common-soft',
       name: '常用软件',
       icon: '📦',
