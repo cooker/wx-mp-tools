@@ -108,6 +108,11 @@ export const navConfig = {
           fit: 'cover-down',
           position: 'center',
         },
+      }, {
+        link: {
+          text: '国际旅游',
+          url: 'https://omg10.com/4/7922865',
+        },
       }
       // { link: { text: '赞助商链接', url: 'https://example.com' } },
     ],
