@@ -1,6 +1,7 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { NButton, NCard } from 'naive-ui'
+import { formatDisplayUrl } from '../../../utils/formatDisplayUrl.js'
 
 const props = defineProps({
   name: { type: String, required: true },
@@ -25,6 +26,7 @@ defineEmits(['toggle-favorite'])
 
 const copied = ref(false)
 let copyTimeout = null
+const displayUrl = computed(() => formatDisplayUrl(props.url))
 
 async function copyExtractCode() {
   const code = props.extractCode
@@ -76,6 +78,7 @@ async function copyExtractCode() {
       <span v-if="icon" class="tool-card__icon" aria-hidden="true">{{ icon }}</span>
       <div class="tool-card__body">
         <span class="tool-card__name">{{ title || name }}</span>
+        <span v-if="displayUrl" class="tool-card__url" :title="url">{{ displayUrl }}</span>
         <span v-if="desc" class="tool-card__desc">{{ desc }}</span>
         <span
           v-if="extractCode"
@@ -198,6 +201,18 @@ async function copyExtractCode() {
   line-height: 1.4;
 }
 
+.tool-card__url {
+  display: inline-block;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--text-muted);
+  opacity: 0.85;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
 .tool-card__extract {
   display: flex;
   align-items: center;
@@ -280,6 +295,12 @@ async function copyExtractCode() {
 
   .tool-card__desc {
     display: none;
+  }
+
+  .tool-card__url {
+    width: 100%;
+    font-size: 0.64rem;
+    text-align: center;
   }
 
   .tool-card__extract {
